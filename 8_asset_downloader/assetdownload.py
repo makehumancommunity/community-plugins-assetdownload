@@ -26,16 +26,10 @@ import mh
 import gui
 import log
 import json
-import urllib2
 import os
 import re
 import platform
 import calendar, datetime
-
-
-from PyQt4 import QtGui
-from PyQt4 import QtCore
-from PyQt4.QtGui import *
 
 from progress import Progress
 
@@ -43,9 +37,24 @@ from core import G
 
 mhapi = gui3d.app.mhapi
 
+import importlib
+import importlib.util
+
+if mhapi.utility.isPySideAvailable():
+    from PySide import QtGui
+    from PySide import QtCore
+    from PySide.QtGui import *
+else:
+    from PyQt4 import QtGui
+    from PyQt4 import QtCore
+    from PyQt4.QtGui import *
+
+
 class AssetDownloadTaskView(gui3d.TaskView):
 
     def __init__(self, category):        
+
+        self.urlfetcher = mhapi.utility.getCompatibleUrlFetcher()
         
         gui3d.TaskView.__init__(self, category, 'Download assets')
 
@@ -58,7 +67,6 @@ class AssetDownloadTaskView(gui3d.TaskView):
         self.selectBox.addWidget(gui.TextView("\nType"))
         #self.typeList = self.selectBox.addWidget(gui.ListView())
         #self.typeList.setSizePolicy(gui.SizePolicy.Ignored, gui.SizePolicy.Preferred)
-
 
         types = [
             "Target",
@@ -99,7 +107,12 @@ class AssetDownloadTaskView(gui3d.TaskView):
         ]
 
         self.assetList.setData(assets)
-        self.assetList.selectionModel().selectionChanged.connect(self.onAssetChange)
+
+        # This might look like a convoluted thing to do, but we need to keep the 
+        # selectionModel in memory to avoid a segfault. So we assign it to self.
+        self.assetListSelectionModel = self.assetList.selectionModel()
+
+        self.assetListSelectionModel.selectionChanged.connect(self.onAssetChange)
 
         self.selectBox.addWidget(gui.TextView(" "))
 
@@ -332,8 +345,12 @@ class AssetDownloadTaskView(gui3d.TaskView):
         self.progress = Progress()
         self.progress(0.0,0.1)
 
-        web = urllib2.urlopen("http://www.makehumancommunity.org/sites/default/files/assets.json");
+        web = self.urlfetcher.urlopen("http://www.makehumancommunity.org/sites/default/files/assets.json");
         jsonstring = web.read()
+
+        if mhapi.utility.isPython3():
+            jsonstring = jsonstring.decode("UTF-8")
+
         assetJson = json.loads(jsonstring)
 
         increment = 0.8 / len(assetJson.keys())
@@ -356,7 +373,7 @@ class AssetDownloadTaskView(gui3d.TaskView):
     def downloadUrl(self, url, saveAs=None, asset=None, fileName=None):
         try:
             url = re.sub(r"\s","%20",url)
-            data = urllib2.urlopen(url).read()
+            data = self.urlfetcher.urlopen(url).read()
             newData = self.normalizeFiles(data,asset,saveAs,fileName)
             with open(saveAs,"wb") as f:
                 f.write(newData)                

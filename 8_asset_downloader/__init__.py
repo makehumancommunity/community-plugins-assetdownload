@@ -27,7 +27,7 @@ import gui
 import log
 import json
 
-from assetdownload import AssetDownloadTaskView
+from .assetdownload import AssetDownloadTaskView
 
 category = None
 
