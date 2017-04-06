@@ -37,9 +37,6 @@ from core import G
 
 mhapi = gui3d.app.mhapi
 
-import importlib
-import importlib.util
-
 if mhapi.utility.isPySideAvailable():
     from PySide import QtGui
     from PySide import QtCore
