@@ -92,5 +92,5 @@ ENV/
 .idea
 
 # Other
-.old
+*.old
 
