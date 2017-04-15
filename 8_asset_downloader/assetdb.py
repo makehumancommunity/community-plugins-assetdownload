@@ -52,7 +52,7 @@ class AssetDB():
         self.remotecache = os.path.join(self.root,"remotecache")
         self.remotedb = os.path.join(self.root,"remote.json")
         self.localdb = os.path.join(self.root,"local.json")
-        self.log = mhapi.utility.getLogChannel("assetdownload",4,False)
+        self.log = mhapi.utility.getLogChannel("assetdownload")
 
         self.localJson = None
 
@@ -104,8 +104,6 @@ class AssetDB():
             else:
                 assetId = asset.getId()
                 self.remoteAssets[assetType][assetId] = asset
-
-            self.log.trace("downloads",asset.getDownloadTuples())
 
         for assetType in self.remoteAssets:
             for assetId in self.remoteAssets[assetType]:
@@ -190,11 +188,21 @@ class AssetDB():
                 if author is not None:
                     if author != asset.getAuthor():
                         exclude = True
-                
+
                 if not exclude:
                     outData.append(asset)
 
         return outData
+
+    def getDownloadTuples(self, ignoreExisting=True, onlyMeta=False, excludeThumb=False, excludeScreenshot=False):
+        allData = []
+        for assetType in self.remoteAssets.keys():
+            for assetId in self.remoteAssets[assetType].keys():
+                asset = self.remoteAssets[assetType][assetId]
+                tuples = asset.getDownloadTuples(ignoreExisting, onlyMeta, excludeThumb, excludeScreenshot)
+                allData.extend(tuples)
+
+        return allData
 
     def getKnownAuthors(self):
         return list(self.knownAuthors)
