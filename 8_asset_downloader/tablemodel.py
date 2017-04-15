@@ -51,7 +51,7 @@ class AssetTableModel(QtCore.QAbstractTableModel):
 
     def __init__(self, data, headers, parent=None):
         QtCore.QAbstractTableModel.__init__(self,parent)
-        self.log = mhapi.utility.getLogChannel("assetdownload", 4, False)
+        self.log = mhapi.utility.getLogChannel("assetdownload")
 
         self.__data=data     # Initial Data
         self.__headers=headers
