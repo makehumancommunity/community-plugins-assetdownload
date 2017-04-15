@@ -42,7 +42,7 @@ class DownloadThread(QThread):
 
     def __init__(self, downloadTuples, parent = None):
         QThread.__init__(self, parent)
-        self.log = mhapi.utility.getLogChannel("downloadtask")
+        self.log = mhapi.utility.getLogChannel("assetdownload")
         self.exiting = False
         self.downloadTuples = downloadTuples
         self.request = mhapi.utility.getCompatibleUrlFetcher()

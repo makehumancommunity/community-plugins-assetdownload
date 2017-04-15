@@ -55,7 +55,7 @@ class AssetDownloadTaskView(gui3d.TaskView):
     def __init__(self, category):
         gui3d.TaskView.__init__(self, category, 'Download assets')
 
-        self.log = mhapi.utility.getLogChannel("assetdownload_ui")
+        self.log = mhapi.utility.getLogChannel("assetdownload")
 
         self.notfound = mhapi.locations.getSystemDataPath("notfound.thumb")
         self.assetdb = AssetDB(self)
