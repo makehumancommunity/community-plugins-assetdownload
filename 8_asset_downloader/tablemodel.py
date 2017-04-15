@@ -57,11 +57,11 @@ class AssetTableModel(QtCore.QAbstractTableModel):
         self.__headers=headers
 
     def rowCount( self, parent ):
-        self.log.debug("rowCount")
+        self.log.trace("rowCount")
         return len(self.__data)
 
     def columnCount( self , parent ):
-        self.log.debug("columnCount")
+        self.log.trace("columnCount")
         return len(self.__headers)
 
     def data ( self , index , role ):
