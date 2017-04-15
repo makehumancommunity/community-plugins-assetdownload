@@ -48,13 +48,14 @@ else:
 
 from .assetdb import AssetDB
 from .tablemodel import AssetTableModel
+from .downloadtask import DownloadTask
 
 class AssetDownloadTaskView(gui3d.TaskView):
 
     def __init__(self, category):
         gui3d.TaskView.__init__(self, category, 'Download assets')
 
-        self.log = mhapi.utility.getLogChannel("assetdownload_ui", 4, False)
+        self.log = mhapi.utility.getLogChannel("assetdownload_ui")
 
         self.notfound = mhapi.locations.getSystemDataPath("notfound.thumb")
         self.assetdb = AssetDB(self)
@@ -153,7 +154,6 @@ class AssetDownloadTaskView(gui3d.TaskView):
 
         assets = self.assetdb.getFilteredAssets("clothes", author=author)
 
-
         print(assets)
 
         self.data = []
@@ -226,7 +226,11 @@ class AssetDownloadTaskView(gui3d.TaskView):
         self.addRightWidget(self.syncBox)
 
     def _onBtnSyncClick(self):
-        pass
+        allDownloads = self.assetdb.getDownloadTuples(onlyMeta=True)
+        self.dt = DownloadTask(self.syncBox,allDownloads,onFinished=self._downloadFinished)
+
+    def _downloadFinished(self):
+        self.log.debug("Download finished")
 
     def _setupTable(self):
         self.data = [["No filter"]]
