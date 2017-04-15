@@ -53,6 +53,7 @@ fileForType["expression"] = "mhpose"
 fileForType["rig"] = "mhskel"
 fileForType["target"] = "file"
 
+
 class RemoteAsset():
 
     def __init__(self, parent, json):
@@ -60,7 +61,7 @@ class RemoteAsset():
         self.cachedDestination = None
         self.parent = parent
         self.rawJson = json
-        self.log = mhapi.utility.getLogChannel("assetdownload",4,False)
+        self.log = mhapi.utility.getLogChannel("assetdownload")
 
         self._parseGeneric()
 
@@ -229,7 +230,7 @@ class RemoteAsset():
             self.cachedDestination = mhapi.assets.getAssetLocation(self.title, self.type)
         return self.cachedDestination
 
-    def getDownloadTuples(self, ignoreExisting = True):
+    def getDownloadTuples(self, ignoreExisting = True, onlyMeta=False, excludeThumb=False, excludeScreenshot=False):
         self.log.trace("Enter")
         downloads = []
         for key in self.remoteFiles.keys():
@@ -239,11 +240,32 @@ class RemoteAsset():
             self.log.trace("l",l)
             self.log.trace("r",r)
 
+            self.log.trace("key",key)
+
             if not ignoreExisting or not os.path.exists(l):
-                self.log.trace("doadd")
-                downloads.append((r,l))
+
+                if key == "thumb" or key == "render" or key == "screenshot":
+                    self.log.debug("ismeta")
+                    if key == "thumb":
+                        if not excludeThumb:
+                            self.log.debug("Adding file for download", r)
+                            downloads.append((r, l))
+                        else:
+                            self.log.trace("Exclude due to excludeThumb",r)
+                    else:
+                        if not excludeScreenshot:
+                            self.log.debug("Adding file for download", r)
+                            downloads.append((r, l))
+                        else:
+                            self.log.trace("Exclude due to excludeScreenshot",r)
+                else:
+                    if not onlyMeta:
+                        self.log.debug("Adding file for download",r)
+                        downloads.append((r, l))
+                    else:
+                        self.log.trace("Exclude due to onlyMeta",r)
             else:
-                self.log.trace("noadd")
+                self.log.trace("Ignoring file",r)
 
         return downloads
 
