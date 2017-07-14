@@ -65,8 +65,12 @@ class DownloadThread(QThread):
             current = current + 1
             self.log.debug("About to download",remote)
 
+            remote = remote.replace(" ", "%20")
+
             try:
                 data = self.request.urlopen(remote).read()
+                with open(local,"wb") as f:
+                    f.write(data)
             except:
                 self.log.warn("Could not download",remote)
 
