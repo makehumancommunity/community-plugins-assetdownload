@@ -66,7 +66,7 @@ class AssetDownloadTaskView(gui3d.TaskView):
         self._setupTable()
 
     def _setupFilterBox(self):
-
+        self.log.trace("Enter")
         self.filterBox = mhapi.ui.createGroupBox("Filter assets")
 
         self.types = [
@@ -140,10 +140,12 @@ class AssetDownloadTaskView(gui3d.TaskView):
         self.addLeftWidget(self.filterBox)
 
     def _onTypeChange(self):
+        self.log.trace("Enter")
+        self.log.debug("Type change")
         pass
 
     def _onBtnFilterClick(self):
-
+        self.log.trace("Enter")
         oldlen = len(self.headers)
 
         author = None
@@ -169,6 +171,7 @@ class AssetDownloadTaskView(gui3d.TaskView):
         self.tableView.columnCountChanged(oldlen, len(self.headers))
 
     def _setupSelectedBox(self):
+        self.log.trace("Enter")
         self.selectBox = mhapi.ui.createGroupBox("Selected")
 
         self.thumbnail = self.selectBox.addWidget(gui.TextView())
@@ -194,12 +197,15 @@ class AssetDownloadTaskView(gui3d.TaskView):
         self.addRightWidget(self.selectBox)
 
     def _onBtnDetailsClick(self):
+        self.log.trace("Enter")
         pass
 
     def _onBtnDownloadClick(self):
+        self.log.trace("Enter")
         pass
 
     def _setupSyncBox(self):
+        self.log.trace("Enter")
         self.syncBox = mhapi.ui.createGroupBox("Synchronize")
 
         syncinstr = ""
@@ -226,13 +232,16 @@ class AssetDownloadTaskView(gui3d.TaskView):
         self.addRightWidget(self.syncBox)
 
     def _onBtnSyncClick(self):
+        self.log.trace("Enter")
         allDownloads = self.assetdb.getDownloadTuples(onlyMeta=True)
         self.dt = DownloadTask(self.syncBox,allDownloads,onFinished=self._downloadFinished)
 
     def _downloadFinished(self):
+        self.log.trace("Enter")
         self.log.debug("Download finished")
 
     def _setupTable(self):
+        self.log.trace("Enter")
         self.data = [["No filter"]]
         self.headers = ["Info"]
         self.model = AssetTableModel(self.data, self.headers)
