@@ -498,7 +498,8 @@ class AssetDownloadTaskView(gui3d.TaskView):
                     found = True
                     
             if not found:
-                log.debug("Unmatched asset type. " + str(asset["nid"]) + " (" + asset["type"] + "): " + asset["title"])
+                log.debug("Unmatched asset type. " + str(asset["nid"]) + " (" + aType + " / " + aCat + "): " + asset["title"])
+                log.debug(str(asset))
 
         self.assetList.setData(sorted(self.hairNames))
         self.typeList.setCurrentItem("Hair")
