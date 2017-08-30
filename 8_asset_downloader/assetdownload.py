@@ -86,7 +86,7 @@ class AssetDownloadTaskView(gui3d.TaskView):
         ]
 
         self.filterBox.addWidget(mhapi.ui.createLabel("\nAsset type"))
-        self.cbxTypes = mhapi.ui.createComboBox(self.types, self._onTypeChange())
+        self.cbxTypes = mhapi.ui.createComboBox(self.types, self._onTypeChange)
         self.filterBox.addWidget(self.cbxTypes)
 
         self.filterBox.addWidget(mhapi.ui.createLabel("\nAsset subtype"))
@@ -139,10 +139,9 @@ class AssetDownloadTaskView(gui3d.TaskView):
 
         self.addLeftWidget(self.filterBox)
 
-    def _onTypeChange(self):
+    def _onTypeChange(self,newValue):
         self.log.trace("Enter")
-        self.log.debug("Type change")
-        pass
+        self.log.debug("Asset type changed to",newValue)
 
     def _onBtnFilterClick(self):
         self.log.trace("Enter")
@@ -155,8 +154,6 @@ class AssetDownloadTaskView(gui3d.TaskView):
             author = self.cbxAuthors.getCurrentItem()
 
         assets = self.assetdb.getFilteredAssets("clothes", author=author)
-
-        print(assets)
 
         self.data = []
 
@@ -233,8 +230,14 @@ class AssetDownloadTaskView(gui3d.TaskView):
 
     def _onBtnSyncClick(self):
         self.log.trace("Enter")
-        allDownloads = self.assetdb.getDownloadTuples(onlyMeta=True)
-        self.dt = DownloadTask(self.syncBox,allDownloads,onFinished=self._downloadFinished)
+        self.assetdb.synchronizeRemote(self.syncBox,self._onSyncFinished(),self._onSyncProgress())
+
+    def _onSyncFinished(self):
+        self.log.trace("onSyncFinished")
+        self.showMessage("Asset DB is now synchronized")
+
+    def _onSyncProgress(self):
+        self.log.trace("onSyncProgress")
 
     def _downloadFinished(self):
         self.log.trace("Enter")
@@ -257,4 +260,12 @@ class AssetDownloadTaskView(gui3d.TaskView):
         self.mainPanel.setLayout(layout)
 
         self.addTopWidget(self.mainPanel)
+
+    def showMessage(self,message,title="Information"):
+        self.msg = QtGui.QMessageBox()
+        self.msg.setIcon(QtGui.QMessageBox.Information)
+        self.msg.setText(message)
+        self.msg.setWindowTitle(title)
+        self.msg.setStandardButtons(QtGui.QMessageBox.Ok)
+        self.msg.show()
 

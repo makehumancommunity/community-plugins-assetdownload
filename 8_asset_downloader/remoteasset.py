@@ -76,7 +76,7 @@ class RemoteAsset():
 
     def _getJsonKey(self,name,default):
 
-        self.log.trace("Enter")
+        self.log.spam("Enter")
 
         out = default
         if name in self.rawJson:
@@ -122,7 +122,7 @@ class RemoteAsset():
         if not "files" in self.rawJson:
             return
 
-        self.log.trace("Files key in json",self.rawJson["files"])
+        self.log.spam("Files key in json",self.rawJson["files"])
 
         for ftype in self.rawJson["files"].keys():
 
@@ -139,7 +139,7 @@ class RemoteAsset():
 
             fn = self.remoteFiles[name].rsplit('/', 1)[-1]
 
-            self.log.trace("fn 1",fn)
+            self.log.spam("fn 1",fn)
 
             extension = os.path.splitext(fn)[1]
             extension = extension.lower()
@@ -151,15 +151,15 @@ class RemoteAsset():
                 fn = "thumb.png"
                 self.localFiles[name] = os.path.join(self.root, fn)
 
-            self.log.trace("fn 2", fn)
+            self.log.spam("fn 2", fn)
 
             if not name == "screenshot" and not name == "thumb":
                 ip = self.getInstallPath()
                 self.log.trace("Install path",ip)
                 self.localFiles[name] = os.path.join(ip,fn)
 
-        self.log.trace("remoteFiles",self.remoteFiles)
-        self.log.trace("localFiles", self.localFiles)
+        self.log.spam("remoteFiles",self.remoteFiles)
+        self.log.spam("localFiles", self.localFiles)
 
     def getCategory(self):
         self.log.trace("Enter")

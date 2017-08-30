@@ -36,6 +36,7 @@ from progress import Progress
 from core import G
 
 from .remoteasset import RemoteAsset
+from .downloadtask import DownloadTask
 
 mhapi = gui3d.app.mhapi
 
@@ -72,7 +73,8 @@ class AssetDB():
 
         self.remoteAssets = {}
         for key in mhapi.assets.getAssetTypes():
-            self.remoteAssets[key] = {}
+            if key != "node_setups_and_blender_specific":
+                self.remoteAssets[key] = {}
 
         self.log.debug("Remote json local path", self.remotedb)
 
@@ -86,11 +88,17 @@ class AssetDB():
             else:
                 self.remoteJson = json.load(f,"UTF-8")
 
+        self.log.spam("remoteJson",self.remoteJson);
+
         for assetId in self.remoteJson.keys():
-            rawAsset = self.remoteJson[assetId];
+            rawAsset = self.remoteJson[assetId]
             asset = RemoteAsset(self,rawAsset)
             assetType = asset.getType()
 
+            self.log.trace("assetId",assetId);
+            self.log.trace("assetType", assetType);
+
+            self.log.spam("rawAsset",rawAsset)
             if assetType == "clothes":
                 cat = asset.getCategory()
                 if cat not in self.knownClothesCategories:
@@ -98,12 +106,13 @@ class AssetDB():
 
             self.knownClothesCategories.sort()
 
-            if assetType not in self.remoteAssets:
+            if assetType not in self.remoteAssets and assetType != "node_setups_and_blender_specific":
                 self.log.error("Asset type not known:",assetType)
                 raise ValueError("Asset type not known: " + assetType)
             else:
-                assetId = asset.getId()
-                self.remoteAssets[assetType][assetId] = asset
+                if assetType != "node_setups_and_blender_specific":
+                    assetId = asset.getId()
+                    self.remoteAssets[assetType][assetId] = asset
 
         for assetType in self.remoteAssets:
             for assetId in self.remoteAssets[assetType]:
@@ -118,7 +127,7 @@ class AssetDB():
     def _loadLocalDB(self):
         self.log.trace("Enter")
 
-        self.log.debug("Local json local path", self.localdb)
+        self.log.debug("About to load local json from", self.localdb)
 
         if not os.path.exists(self.localdb):
             self.log.warn("Local json does not exist")
@@ -131,20 +140,25 @@ class AssetDB():
 
         with open(self.localdb, "r") as f:
             if mhapi.utility.isPython3():
-                self.localdb = json.load(f)
+                self.localAssets = json.load(f)
             else:
-                self.localdb = json.load(f, "UTF-8")
+                self.localAssets = json.load(f, "UTF-8")
+
+        self.log.spam("localAssets",self.localAssets)
 
     def _rebuildLocalDB(self):
         self.log.trace("Enter")
 
+        self.log.debug("About to rebuild local DB")
         self.localAssets = {}
         for key in mhapi.assets.getAssetTypes():
-            self.localAssets[key] = {}
+            if key != "node_setups_and_blender_specific":
+                self.localAssets[key] = {}
 
         for assetType in self.remoteAssets.keys():
             for assetId in self.remoteAssets[assetType].keys():
                 asset = self.remoteAssets[assetType][assetId]
+                self.log.spam("asset",asset)
                 location = asset.getInstallPath()
                 self.log.trace("asset location", location)
                 if os.path.exists(location):
@@ -153,7 +167,7 @@ class AssetDB():
                     if fn is not None:
                         fn = os.path.join(location,fn)
                         if os.path.exists(fn):
-                            self.log.debug("Installed asset", location)
+                            self.log.trace("Installed asset location", location)
                             self.localAssets[assetType][assetId] = {}
                             self.localAssets[assetType][assetId]["file"] = fn
                             mod = os.path.getmtime(fn)
@@ -164,15 +178,12 @@ class AssetDB():
                 else:
                     self.log.trace("NOT installed asset", location)
 
-        self.log.trace("Local assets", self.localAssets)
+        self.log.spam("Local assets", self.localAssets)
 
-        self.log.debug("Json",json.dumps(self.localAssets))
         with open(self.localdb,"wt") as f:
             json.dump(self.localAssets, f, indent=2)
 
-    def _downloadRemoteJson(self):
-        self.log.trace("Enter")
-        pass
+        self.log.debug("Finished rebuilding local DB")
 
     def getFilteredAssets(self, assetType, author=None, subtype=None, hasScreenshot=None, hasThumb=None, isDownloaded=None):
 
@@ -210,9 +221,35 @@ class AssetDB():
     def getKnownClothesCategories(self):
         return list(self.knownClothesCategories)
 
-    def synchronizeRemote(self, downloadScreenshots=True, downloadThumbnails=True):
+    def synchronizeRemote(self, parentWidget, onFinished=None, onProgress=None, downloadScreenshots=True, downloadThumbnails=True):
         self.log.trace("Enter")
-        filesToDownload = []
+        filesToDownload = [["http://www.makehumancommunity.org/sites/default/files/assets.json",self.remotedb]]
+
+        self._syncParentWidget = parentWidget
+        self._synconFinished = onFinished
+        self._synconProgress = onProgress
+
+        self._downloadTask = DownloadTask(parentWidget,filesToDownload,self._syncRemote1Finished,self._syncRemote1Progress)
+
+    def _syncRemote1Progress(self,prog = 0.0):
+        self.log.trace("Enter")
+
+    def _syncRemote1Finished(self):
+        self.log.trace("Enter")
+        self._loadRemoteDB()
+        filesToDownload = self.getDownloadTuples()
+        self._downloadTask = DownloadTask(self._syncParentWidget,filesToDownload,self._syncRemote2Finished,self._syncRemote2Progress)
+
+    def _syncRemote2Progress(self,prog = 0.0):
+        self.log.trace("Enter")
+
+    def _syncRemote2Finished(self):
+        self.log.trace("Enter")
+        self._rebuildLocalDB()
+        self._loadLocalDB()
+
+        if self._synconFinished is not None:
+            self._synconFinished()
 
     def _synchronizeOneAsset(self, jsonHash, downloadScreenshots=True, downloadThumbnails=True):
         self.log.trace("Enter")

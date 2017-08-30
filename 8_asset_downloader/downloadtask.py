@@ -63,7 +63,8 @@ class DownloadThread(QThread):
             if not os.path.exists(dn):
                 os.makedirs(dn)
             current = current + 1
-            self.log.debug("About to download",remote)
+            self.log.trace("About to download", remote)
+            self.log.trace("Destination is", local)
 
             remote = remote.replace(" ", "%20")
 
@@ -71,6 +72,7 @@ class DownloadThread(QThread):
                 data = self.request.urlopen(remote).read()
                 with open(local,"wb") as f:
                     f.write(data)
+                    self.log.debug("Successfully downloaded",remote)
             except:
                 self.log.warn("Could not download",remote)
 
@@ -89,6 +91,7 @@ class DownloadThread(QThread):
 
     def onFinished(self):
         self.log.trace("Enter")
+        #self.onProgress(1.0)
         self.emit(SIGNAL("onFinished()"))
 
     def __del__(self):
@@ -102,7 +105,7 @@ class DownloadThread(QThread):
 class DownloadTask():
 
     def __init__(self, parentWidget, downloadTuples, onFinished=None, onProgress=None):
-        self.log = mhapi.utility.getLogChannel("downloadtask", 4, True)
+        self.log = mhapi.utility.getLogChannel("assetdownload")
 
         self.parentWidget = parentWidget
         self.onFinished = onFinished
@@ -116,22 +119,30 @@ class DownloadTask():
         self.progress = Progress()
 
         self.log.debug("About to start downloading")
+        self.log.spam("downloadTuples",downloadTuples)
 
         self.downloadThread.start()
 
     def _onProgress(self, prog=0.0):
-        self.log.trace("Enter")
-        self.log.debug("_onProgress",prog)
+        self.log.trace("_onProgress",prog)
         self.progress(prog,"Downloading files...")
+
         if self.onProgress is not None:
+            self.log.trace("onProgress callback is defined")
             self.onProgress(prog)
+        else:
+            self.log.trace("onProgress callback is not defined")
 
     def _onFinished(self):
         self.log.trace("Enter")
         self.progress(1.0)
         self.parentWidget.disconnect(self.downloadThread, SIGNAL("onProgress(double)"), self._onProgress)
         self.parentWidget.disconnect(self.downloadThread, SIGNAL("onFinished()"), self._onFinished)
+
         if self.onFinished is not None:
+            self.log.trace("onFinished callback is defined")
             self.onFinished()
+        else:
+            self.log.trace("onFinished callback is not defined")
 
         self.downloadThread = None
