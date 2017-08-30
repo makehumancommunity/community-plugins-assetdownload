@@ -245,22 +245,22 @@ class RemoteAsset():
             if not ignoreExisting or not os.path.exists(l):
 
                 if key == "thumb" or key == "render" or key == "screenshot":
-                    self.log.debug("ismeta")
+                    self.log.trace("ismeta")
                     if key == "thumb":
                         if not excludeThumb:
-                            self.log.debug("Adding file for download", r)
+                            self.log.trace("Adding file for download", r)
                             downloads.append((r, l))
                         else:
                             self.log.trace("Exclude due to excludeThumb",r)
                     else:
                         if not excludeScreenshot:
-                            self.log.debug("Adding file for download", r)
+                            self.log.trace("Adding file for download", r)
                             downloads.append((r, l))
                         else:
                             self.log.trace("Exclude due to excludeScreenshot",r)
                 else:
                     if not onlyMeta:
-                        self.log.debug("Adding file for download",r)
+                        self.log.trace("Adding file for download",r)
                         downloads.append((r, l))
                     else:
                         self.log.trace("Exclude due to onlyMeta",r)
