@@ -239,7 +239,18 @@ class AssetDB():
     def _syncRemote1Finished(self):
         self.log.trace("Enter")
         self._loadRemoteDB()
-        filesToDownload = self.getDownloadTuples()
+
+        filesToDownload = []
+
+        for assetType in self.remoteAssets.keys():
+            for assetId in self.remoteAssets[assetType].keys():
+                remoteAsset = self.remoteAssets[assetType][assetId]
+                tuples = remoteAsset.getDownloadTuples(ignoreExisting=True,onlyMeta=True,excludeScreenshot=False,excludeThumb=False)
+                self.log.spam("Tuples",tuples)
+
+                filesToDownload.extend(tuples)
+
+        self.log.spam("filesToDownload",filesToDownload)
         self._downloadTask = DownloadTask(self._syncParentWidget,filesToDownload,self._syncRemote2Finished,self._syncRemote2Progress)
 
     def _syncRemote2Progress(self,prog = 0.0):
@@ -253,33 +264,5 @@ class AssetDB():
         if self._synconFinished is not None:
             self._synconFinished()
 
-    def _synchronizeOneAsset(self, jsonHash, downloadScreenshots=True, downloadThumbnails=True):
-        self.log.trace("Enter")
-        filesToDownload = []
-
-        assetId = str(jsonHash["nid"])
-        assetDir = os.path.join(self.dbpath,assetId)
-
-        if not os.path.exists(assetDir):
-            os.makedirs(assetDir)
-
-        if "files" in jsonHash.keys():
-            files = jsonHash["files"]
-            if "render" in files.keys():
-                #fn = os.path.join(assetDir,"screenshot.png")
-                fn = self.getScreenshotPath(jsonHash)
-                if not os.path.exists(fn):                    
-                    #log.debug("Downloading " + files["render"])
-                    self.downloadUrl(files["render"],fn)
-                else:
-                    log.debug("Screenshot already existed")
-
-            if "thumb" in files.keys():
-                fn = os.path.join(assetDir,"thumb.png")
-                if not os.path.exists(fn):                    
-                    log.debug("Downloading " + files["thumb"])
-                    self.downloadUrl(files["thumb"],fn)
-                else:
-                    log.debug("thumb already existed")
 
 
