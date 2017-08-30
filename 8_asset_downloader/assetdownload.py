@@ -201,11 +201,21 @@ class AssetDownloadTaskView(gui3d.TaskView):
 
     def _onBtnDetailsClick(self):
         self.log.trace("Enter")
-        pass
+
+        if self.currentlySelectedRemoteAsset is None:
+            self.log.debug("No asset is selected")
+
+        title = self.currentlySelectedRemoteAsset.getTitle()
+        self.log.debug("Request details for asset with title",title)
 
     def _onBtnDownloadClick(self):
         self.log.trace("Enter")
-        pass
+
+        if self.currentlySelectedRemoteAsset is None:
+            self.log.debug("No asset is selected")
+
+        title = self.currentlySelectedRemoteAsset.getTitle()
+        self.log.debug("Request download of asset with title",title)
 
     def _setupSyncBox(self):
         self.log.trace("Enter")
