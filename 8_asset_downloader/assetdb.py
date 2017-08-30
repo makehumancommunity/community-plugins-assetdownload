@@ -189,6 +189,8 @@ class AssetDB():
 
         outData = []
 
+        self.log.debug("Requesting filter with limits", { "assetType": assetType, "author": author, "subtype": subtype})
+
         if assetType in self.remoteAssets:
             allData = self.remoteAssets[assetType]
             for assetId in allData.keys():

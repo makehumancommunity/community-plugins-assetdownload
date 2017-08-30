@@ -153,7 +153,9 @@ class AssetDownloadTaskView(gui3d.TaskView):
         if self.cbxAuthors.getCurrentItem() != "-- any --":
             author = self.cbxAuthors.getCurrentItem()
 
-        assets = self.assetdb.getFilteredAssets("clothes", author=author)
+        assetType = str(self.cbxTypes.getCurrentItem())
+
+        assets = self.assetdb.getFilteredAssets(assetType, author=author)
 
         self.data = []
 
@@ -166,6 +168,10 @@ class AssetDownloadTaskView(gui3d.TaskView):
         self.tableView.setModel(self.model)
 
         self.tableView.columnCountChanged(oldlen, len(self.headers))
+
+        self.hasFilter = True
+        self.currentlySelectedRemoteAsset = None
+        self.thumbnail.setPixmap(QtGui.QPixmap(os.path.abspath(self.notfound)))
 
     def _setupSelectedBox(self):
         self.log.trace("Enter")
@@ -253,6 +259,8 @@ class AssetDownloadTaskView(gui3d.TaskView):
 
         self.tableView = QtGui.QTableView()
         self.tableView.setModel(self.model)
+        self.tableView.clicked.connect(self._tableClick)
+        self.tableView.setSelectionBehavior(QTableView.SelectRows)
 
         layout.addWidget(self.tableView)
 
@@ -260,6 +268,42 @@ class AssetDownloadTaskView(gui3d.TaskView):
         self.mainPanel.setLayout(layout)
 
         self.addTopWidget(self.mainPanel)
+
+        self.hasFilter = False
+
+    def _tableClick(self):
+
+        self.log.trace("Table click")
+
+        if not self.hasFilter:
+            return
+
+        currentRow = None
+
+        indexes = self.tableView.selectionModel().selectedRows()
+        for index in sorted(indexes):
+            currentRow = index.row()
+
+        if currentRow is None:
+            self.log.debug("No row is selected")
+            return;
+
+        self.log.debug("Currently selected row index", currentRow)
+        self.log.spam("Currently selected row data", self.data[currentRow])
+
+        assetId = int(self.data[currentRow][0])
+        assetType = str(self.cbxTypes.getCurrentItem())
+
+        remoteAsset = self.assetdb.remoteAssets[assetType][assetId]
+
+        thumbPath = remoteAsset.getThumbPath()
+
+        if thumbPath is not None:
+            self.thumbnail.setPixmap(QtGui.QPixmap(os.path.abspath(thumbPath)))
+        else:
+            self.log.debug("Asset has no thumbnail")
+
+        self.currentlySelectedRemoteAsset = remoteAsset
 
     def showMessage(self,message,title="Information"):
         self.msg = QtGui.QMessageBox()
