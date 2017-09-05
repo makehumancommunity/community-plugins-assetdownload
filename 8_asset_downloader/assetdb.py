@@ -30,6 +30,7 @@ import re
 import platform
 import calendar
 import datetime
+import shutil
 
 from progress import Progress
 
@@ -264,5 +265,42 @@ class AssetDB():
         if self._synconFinished is not None:
             self._synconFinished()
 
+    def downloadItem(self, parentWidget, remoteAsset, onFinished=None, onProgress=None):
+        self.log.trace("Enter")
 
+        filesToDownload = remoteAsset.getDownloadTuples(ignoreExisting=False,onlyMeta=False,excludeScreenshot=True,excludeThumb=False)
 
+        self._downloadAsset = remoteAsset
+        self._downloadParentWidget = parentWidget
+        self._downloadonFinished = onFinished
+        self._downloadonProgress = onProgress
+
+        self.log.spam("filesToDownload",filesToDownload)
+
+        self._downloadTask = DownloadTask(parentWidget, filesToDownload, self._downloadFinished, self._downloadProgress)
+
+    def _downloadFinished(self):
+
+        remoteAsset = self._downloadAsset
+
+        fn = remoteAsset.getPertinentFileName()
+        srcThumb = remoteAsset.getThumbPath()
+
+        bn = os.path.basename(fn)
+        dn = remoteAsset.getInstallPath()
+
+        (name,ext) = os.path.splitext(bn)
+
+        self.log.debug("srcThumb",srcThumb)
+        self.log.debug("destThumb", os.path.join(dn,name + ".thumb"))
+
+        destThumb = os.path.join(dn,name + ".thumb")
+
+        shutil.copyfile(srcThumb,destThumb)
+
+        if self._downloadonFinished is not None:
+            self._downloadonFinished()
+
+    def _downloadProgress(self, prog):
+        if self._downloadonProgress is not None:
+            self._downloadonProgress(prog)
