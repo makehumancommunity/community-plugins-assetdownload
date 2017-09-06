@@ -106,13 +106,13 @@ class AssetDownloadTaskView(gui3d.TaskView):
 
         yesno = ["-- any --", "yes", "no"]
 
-        self.filterBox.addWidget(mhapi.ui.createLabel("\nHas screenshot"))
-        self.cbxScreenshot = mhapi.ui.createComboBox(yesno)
-        self.filterBox.addWidget(self.cbxScreenshot)
+        #self.filterBox.addWidget(mhapi.ui.createLabel("\nHas screenshot"))
+        #self.cbxScreenshot = mhapi.ui.createComboBox(yesno)
+        #self.filterBox.addWidget(self.cbxScreenshot)
 
-        self.filterBox.addWidget(mhapi.ui.createLabel("\nHas thumbnail"))
-        self.cbxThumb = mhapi.ui.createComboBox(yesno)
-        self.filterBox.addWidget(self.cbxThumb)
+        #self.filterBox.addWidget(mhapi.ui.createLabel("\nHas thumbnail"))
+        #self.cbxThumb = mhapi.ui.createComboBox(yesno)
+        #self.filterBox.addWidget(self.cbxThumb)
 
         # yesno.extend(["with new remote"])
 
