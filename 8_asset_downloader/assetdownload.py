@@ -143,19 +143,38 @@ class AssetDownloadTaskView(gui3d.TaskView):
         self.log.trace("Enter")
         self.log.debug("Asset type changed to",newValue)
 
+        if newValue == "clothes":
+            self.cbxSubTypes.clear()
+            self.cbxSubTypes.addItem("-- any --")
+            for type in self.assetdb.getKnownClothesCategories():
+                self.cbxSubTypes.addItem(type)
+        else:
+            self.cbxSubTypes.clear()
+            self.cbxSubTypes.addItem("-- any --")
+
     def _onBtnFilterClick(self):
         self.log.trace("Enter")
         oldlen = len(self.headers)
 
         author = None
         category = None
+        subtype = None
 
         if self.cbxAuthors.getCurrentItem() != "-- any --":
             author = self.cbxAuthors.getCurrentItem()
 
         assetType = str(self.cbxTypes.getCurrentItem())
 
-        assets = self.assetdb.getFilteredAssets(assetType, author=author)
+        if assetType == "clothes":
+            subtype = str(self.cbxSubTypes.getCurrentItem())
+            if subtype == "-- any --":
+                subtype = None
+
+        title = str(self.txtTitle.getText())
+        if title == "":
+            title = None
+
+        assets = self.assetdb.getFilteredAssets(assetType, author=author, subtype=subtype, title=title)
 
         self.data = []
 
