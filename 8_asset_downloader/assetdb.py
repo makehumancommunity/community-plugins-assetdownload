@@ -181,10 +181,13 @@ class AssetDB():
 
         self.log.spam("Local assets", self.localAssets)
 
-        with open(self.localdb,"wt") as f:
-            json.dump(self.localAssets, f, indent=2)
+        self._writeLocalDB()
 
         self.log.debug("Finished rebuilding local DB")
+
+    def _writeLocalDB(self):
+        with open(self.localdb,"wt") as f:
+            json.dump(self.localAssets, f, indent=2)
 
     def getFilteredAssets(self, assetType, author=None, subtype=None, hasScreenshot=None, hasThumb=None, isDownloaded=None):
 
@@ -295,8 +298,23 @@ class AssetDB():
         self.log.debug("destThumb", os.path.join(dn,name + ".thumb"))
 
         destThumb = os.path.join(dn,name + ".thumb")
-
         shutil.copyfile(srcThumb,destThumb)
+
+        assetType = remoteAsset.getType()
+        assetId = remoteAsset.getId()
+
+        file = os.path.join(dn,fn)
+
+        self.log.debug("Downloaded file should be",file)
+        self.log.debug("assetId",assetId)
+
+        mod = os.path.getmtime(file)
+        dt = datetime.datetime.fromtimestamp(mod)
+        modified = dt.strftime('%Y-%m-%d %H:%M:%S')
+
+        self.localAssets[assetType][assetId] = { "file": file, "modified": modified }
+
+        self._writeLocalDB()
 
         if self._downloadonFinished is not None:
             self._downloadonFinished()
