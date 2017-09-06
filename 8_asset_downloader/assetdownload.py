@@ -174,11 +174,16 @@ class AssetDownloadTaskView(gui3d.TaskView):
         if title == "":
             title = None
 
+        desc = str(self.txtDesc.getText())
+        if desc == "":
+            desc = None
+
+
         downloaded = str(self.cbxDownloaded.getCurrentItem())
         if downloaded == "-- any --":
             downloaded = None
 
-        assets = self.assetdb.getFilteredAssets(assetType, author=author, subtype=subtype, title=title, isDownloaded=downloaded)
+        assets = self.assetdb.getFilteredAssets(assetType, author=author, subtype=subtype, title=title, isDownloaded=downloaded, desc=desc)
 
         self.data = []
 

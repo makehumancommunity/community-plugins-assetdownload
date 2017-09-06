@@ -215,6 +215,11 @@ class AssetDB():
                     if not lt in asset.getTitle().lower():
                         exclude = True
 
+                if desc is not None:
+                    lt = desc.lower()
+                    if not lt in asset.getDescription().lower():
+                        exclude = True
+
                 if isDownloaded is not None:
                     self.log.trace("isDownloaded",isDownloaded)
                     if isDownloaded == "yes":
