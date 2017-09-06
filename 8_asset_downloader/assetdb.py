@@ -189,7 +189,7 @@ class AssetDB():
         with open(self.localdb,"wt") as f:
             json.dump(self.localAssets, f, indent=2)
 
-    def getFilteredAssets(self, assetType, author=None, subtype=None, hasScreenshot=None, hasThumb=None, isDownloaded=None, title=None, desc=None, changed=None):
+    def getFilteredAssets(self, assetType, author=None, subtype=None, hasScreenshot=None, hasThumb=None, isDownloaded=None, title=None, desc=None, changed=None, license=None):
 
         outData = []
 
@@ -241,6 +241,10 @@ class AssetDB():
                 if desc is not None:
                     lt = desc.lower()
                     if not lt in asset.getDescription().lower():
+                        exclude = True
+
+                if license is not None:
+                    if license != asset.getLicense():
                         exclude = True
 
                 if isDownloaded is not None:

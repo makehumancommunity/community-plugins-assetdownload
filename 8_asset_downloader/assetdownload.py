@@ -116,6 +116,11 @@ class AssetDownloadTaskView(gui3d.TaskView):
 
         # yesno.extend(["with new remote"])
 
+        lic = ["-- any --","CC0", "CC-BY", "AGPL"]
+        self.filterBox.addWidget(mhapi.ui.createLabel("\nAsset license"))
+        self.cbxLicense = mhapi.ui.createComboBox(lic)
+        self.filterBox.addWidget(self.cbxLicense)
+
         self.filterBox.addWidget(mhapi.ui.createLabel("\nAlready downloaded"))
         self.cbxDownloaded = mhapi.ui.createComboBox(yesno)
         self.filterBox.addWidget(self.cbxDownloaded)
@@ -161,9 +166,9 @@ class AssetDownloadTaskView(gui3d.TaskView):
         oldlen = len(self.headers)
 
         author = None
-        category = None
         subtype = None
         changed = None
+        license = None
 
         if self.cbxAuthors.getCurrentItem() != "-- any --":
             author = str(self.cbxAuthors.getCurrentItem())
@@ -183,6 +188,9 @@ class AssetDownloadTaskView(gui3d.TaskView):
         if desc == "":
             desc = None
 
+        if self.cbxLicense.getCurrentItem() != "-- any --":
+            license = str(self.cbxLicense.getCurrentItem())
+
         if self.cbxUpdated.getCurrentItem() != "-- any --":
             changed = str(self.cbxUpdated.getCurrentItem())
 
@@ -190,14 +198,14 @@ class AssetDownloadTaskView(gui3d.TaskView):
         if downloaded == "-- any --":
             downloaded = None
 
-        assets = self.assetdb.getFilteredAssets(assetType, author=author, subtype=subtype, title=title, isDownloaded=downloaded, desc=desc, changed=changed)
+        assets = self.assetdb.getFilteredAssets(assetType, author=author, subtype=subtype, title=title, isDownloaded=downloaded, desc=desc, changed=changed, license=license)
 
         self.data = []
 
-        self.headers = ["node id", "author", "title", "description"]
+        self.headers = ["node id", "author", "license", "title", "description"]
 
         for asset in assets:
-            self.data.append( [ str(asset.getId()), asset.getAuthor(), asset.getTitle(), asset.getDescription() ])
+            self.data.append( [ str(asset.getId()), asset.getAuthor(), asset.getLicense(), asset.getTitle(), asset.getDescription() ])
 
         self.model = AssetTableModel(self.data,self.headers)
         self.tableView.setModel(self.model)
@@ -321,13 +329,13 @@ class AssetDownloadTaskView(gui3d.TaskView):
 
     def _onBtnSyncClick(self):
         self.log.trace("Enter")
-        self.assetdb.synchronizeRemote(self.syncBox,self._onSyncFinished(),self._onSyncProgress())
+        self.assetdb.synchronizeRemote(self.syncBox,self._onSyncFinished,self._onSyncProgress)
 
     def _onSyncFinished(self):
         self.log.trace("onSyncFinished")
         self.showMessage("Asset DB is now synchronized")
 
-    def _onSyncProgress(self):
+    def _onSyncProgress(self,prog=0.0):
         self.log.trace("onSyncProgress")
 
     def _downloadFinished(self):
