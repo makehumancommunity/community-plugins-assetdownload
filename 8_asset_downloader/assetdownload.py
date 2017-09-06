@@ -433,8 +433,10 @@ class AssetDownloadTaskView(gui3d.TaskView):
 
         if render is not None and render != "" and os.path.exists(render):
             self.detailsRender.setPixmap(QtGui.QPixmap(os.path.abspath(render)))
+            self.thumbnail.setGeometry(0, 0, 128, 128)
         else:
             self.detailsRender.setPixmap(QtGui.QPixmap(os.path.abspath(self.notfound)))
+            self.thumbnail.setGeometry(0, 0, 800, 600)
 
     def showMessage(self,message,title="Information"):
         self.msg = QtGui.QMessageBox()
