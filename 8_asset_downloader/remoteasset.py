@@ -88,6 +88,7 @@ class RemoteAsset():
         self.log.trace("Enter")
 
         self.type = self._getJsonKey("type", "unknown")
+        self.license = self._getJsonKey("license", "unknown")
         self.title = self._getJsonKey("title","-- unknown title --")
         self.description = self._getJsonKey("description", "--")
         self.username = self._getJsonKey("username","unknown author")
@@ -195,6 +196,10 @@ class RemoteAsset():
     def getCreated(self):
         self.log.trace("Enter")
         return self.created
+
+    def getLicense(self):
+        self.log.trace("Enter")
+        return self.license
 
     def getPertinentFileName(self):
         self.log.trace("Enter")
