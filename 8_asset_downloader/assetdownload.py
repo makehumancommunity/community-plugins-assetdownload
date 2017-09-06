@@ -64,6 +64,10 @@ class AssetDownloadTaskView(gui3d.TaskView):
         self._setupSelectedBox()
         self._setupSyncBox()
         self._setupTable()
+        self._setupDetails()
+
+        self.currentlySelectedRemoteAsset = None
+        self.isShowingDetails = False
 
     def _setupFilterBox(self):
         self.log.trace("Enter")
@@ -234,11 +238,24 @@ class AssetDownloadTaskView(gui3d.TaskView):
     def _onBtnDetailsClick(self):
         self.log.trace("Enter")
 
+        if self.isShowingDetails:
+            self.mainPanel.show()
+            self.detailsPanel.hide()
+            self.isShowingDetails = False
+            self.btnDetails.setText("View details")
+            return
+
         if self.currentlySelectedRemoteAsset is None:
             self.log.debug("No asset is selected")
+            return
 
         title = self.currentlySelectedRemoteAsset.getTitle()
         self.log.debug("Request details for asset with title",title)
+
+        self.mainPanel.hide()
+        self.detailsPanel.show()
+        self.btnDetails.setText("Hide details")
+        self.isShowingDetails = True
 
     def _onBtnDownloadClick(self):
         self.log.trace("Enter")
@@ -339,6 +356,34 @@ class AssetDownloadTaskView(gui3d.TaskView):
 
         self.hasFilter = False
 
+    def _setupDetails(self):
+        self.log.trace("Enter")
+
+        layout = QtGui.QVBoxLayout()
+
+        self.detailsName = mhapi.ui.createLabel("<h1>Selected title</h1>")
+        layout.addWidget(self.detailsName)
+
+        self.detailsDesc = mhapi.ui.createLabel("<p>Selected description</p>")
+        self.detailsDesc.setWordWrap(True)
+        layout.addWidget(self.detailsDesc)
+
+        self.detailsExtras = mhapi.ui.createLabel("<tt>License...: Hej<br />Category...: Hopp</tt>")
+        layout.addWidget(self.detailsExtras)
+
+        self.detailsRender = gui.TextView()
+        self.detailsRender.setPixmap(QtGui.QPixmap(os.path.abspath(self.notfound)))
+        layout.addWidget(self.detailsRender)
+
+        layout.addStretch(1)
+
+        self.detailsPanel = QtGui.QWidget()
+        self.detailsPanel.setLayout(layout)
+
+        self.addTopWidget(self.detailsPanel)
+
+        self.detailsPanel.hide()
+
     def _tableClick(self):
 
         self.log.trace("Table click")
@@ -372,6 +417,24 @@ class AssetDownloadTaskView(gui3d.TaskView):
             self.log.debug("Asset has no thumbnail")
 
         self.currentlySelectedRemoteAsset = remoteAsset
+
+        self.detailsName.setText("<h1>" + remoteAsset.getTitle() + "</h1>")
+        self.detailsDesc.setText("<p>" + remoteAsset.getDescription() + "</p>")
+
+        extras = "<br /><br /><tt>"
+        extras = extras + "<b>Author........: </b>" + remoteAsset.getAuthor() + "<br />"
+        extras = extras + "<b>License.......: </b>" + remoteAsset.getLicense() + "<br />"
+        extras = extras + "<b>Last changed..: </b>" + remoteAsset.getChanged() + "<br />"
+
+        extras = extras + "</tt>"
+        self.detailsExtras.setText(extras)
+
+        render = remoteAsset.getScreenshotPath()
+
+        if render is not None and render != "" and os.path.exists(render):
+            self.detailsRender.setPixmap(QtGui.QPixmap(os.path.abspath(render)))
+        else:
+            self.detailsRender.setPixmap(QtGui.QPixmap(os.path.abspath(self.notfound)))
 
     def showMessage(self,message,title="Information"):
         self.msg = QtGui.QMessageBox()
