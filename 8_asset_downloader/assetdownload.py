@@ -191,6 +191,7 @@ class AssetDownloadTaskView(gui3d.TaskView):
         self.tableView.setModel(self.model)
 
         self.tableView.columnCountChanged(oldlen, len(self.headers))
+        self.tableView.resizeColumnsToContents()
 
         self.hasFilter = True
         self.currentlySelectedRemoteAsset = None
