@@ -110,7 +110,7 @@ class AssetDownloadTaskView(gui3d.TaskView):
         self.cbxThumb = mhapi.ui.createComboBox(yesno)
         self.filterBox.addWidget(self.cbxThumb)
 
-        yesno.extend(["remote is newer"])
+        # yesno.extend(["with new remote"])
 
         self.filterBox.addWidget(mhapi.ui.createLabel("\nAlready downloaded"))
         self.cbxDownloaded = mhapi.ui.createComboBox(yesno)
@@ -174,7 +174,11 @@ class AssetDownloadTaskView(gui3d.TaskView):
         if title == "":
             title = None
 
-        assets = self.assetdb.getFilteredAssets(assetType, author=author, subtype=subtype, title=title)
+        downloaded = str(self.cbxDownloaded.getCurrentItem())
+        if downloaded == "-- any --":
+            downloaded = None
+
+        assets = self.assetdb.getFilteredAssets(assetType, author=author, subtype=subtype, title=title, isDownloaded=downloaded)
 
         self.data = []
 

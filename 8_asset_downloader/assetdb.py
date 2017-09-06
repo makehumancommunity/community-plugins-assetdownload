@@ -189,7 +189,7 @@ class AssetDB():
         with open(self.localdb,"wt") as f:
             json.dump(self.localAssets, f, indent=2)
 
-    def getFilteredAssets(self, assetType, author=None, subtype=None, hasScreenshot=None, hasThumb=None, isDownloaded=None, title=None, desc=None):
+    def getFilteredAssets(self, assetType, author=None, subtype=None, hasScreenshot=None, hasThumb=None, isDownloaded=None, title=None, desc=None, changed=None):
 
         outData = []
 
@@ -214,6 +214,17 @@ class AssetDB():
                     lt = title.lower()
                     if not lt in asset.getTitle().lower():
                         exclude = True
+
+                if isDownloaded is not None:
+                    self.log.trace("isDownloaded",isDownloaded)
+                    if isDownloaded == "yes":
+                        self.log.trace("assetId",assetId)
+                        self.log.trace("assetType",assetType)
+                        if str(assetId) not in self.localAssets[assetType]:
+                            exclude = True
+                    else:
+                        if str(assetId) in self.localAssets[assetType]:
+                            exclude = True
 
                 if not exclude:
                     outData.append(asset)
