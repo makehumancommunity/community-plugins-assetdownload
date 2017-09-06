@@ -159,9 +159,10 @@ class AssetDownloadTaskView(gui3d.TaskView):
         author = None
         category = None
         subtype = None
+        changed = None
 
         if self.cbxAuthors.getCurrentItem() != "-- any --":
-            author = self.cbxAuthors.getCurrentItem()
+            author = str(self.cbxAuthors.getCurrentItem())
 
         assetType = str(self.cbxTypes.getCurrentItem())
 
@@ -178,12 +179,14 @@ class AssetDownloadTaskView(gui3d.TaskView):
         if desc == "":
             desc = None
 
+        if self.cbxUpdated.getCurrentItem() != "-- any --":
+            changed = str(self.cbxUpdated.getCurrentItem())
 
         downloaded = str(self.cbxDownloaded.getCurrentItem())
         if downloaded == "-- any --":
             downloaded = None
 
-        assets = self.assetdb.getFilteredAssets(assetType, author=author, subtype=subtype, title=title, isDownloaded=downloaded, desc=desc)
+        assets = self.assetdb.getFilteredAssets(assetType, author=author, subtype=subtype, title=title, isDownloaded=downloaded, desc=desc, changed=changed)
 
         self.data = []
 

@@ -195,6 +195,29 @@ class AssetDB():
 
         self.log.debug("Requesting filter with limits", { "assetType": assetType, "author": author, "subtype": subtype})
 
+        afterDate = None
+
+        if changed is not None:
+            days = 36500
+
+            if changed.lower() == "one week":
+                days = 7
+
+            if changed.lower() == "one month":
+                days = 30
+
+            if changed.lower() == "three months":
+                days = 90
+
+            if changed.lower() == "one year":
+                days = 365;
+
+            dt = datetime.datetime.now()
+            dt = dt - datetime.timedelta(days)
+            afterDate = dt.strftime('%Y-%m-%d %H:%M:%S')
+
+            self.log.debug("afterDate",afterDate)
+
         if assetType in self.remoteAssets:
             allData = self.remoteAssets[assetType]
             for assetId in allData.keys():
@@ -229,6 +252,13 @@ class AssetDB():
                             exclude = True
                     else:
                         if str(assetId) in self.localAssets[assetType]:
+                            exclude = True
+
+                if afterDate is not None:
+                    assetChanged = asset.getChanged()
+                    self.log.trace("assetChanged",assetChanged)
+                    if assetChanged != "" and assetChanged is not None:
+                        if assetChanged < afterDate:
                             exclude = True
 
                 if not exclude:
