@@ -208,7 +208,9 @@ class AssetDownloadTaskView(gui3d.TaskView):
             self.data.append( [ str(asset.getId()), asset.getAuthor(), asset.getLicense(), asset.getTitle(), asset.getDescription() ])
 
         self.model = AssetTableModel(self.data,self.headers)
-        self.tableView.setModel(self.model)
+        self.proxymodel = QSortFilterProxyModel()
+        self.proxymodel.setSourceModel(self.model)
+        self.tableView.setModel(self.proxymodel)
 
         self.tableView.columnCountChanged(oldlen, len(self.headers))
         self.tableView.resizeColumnsToContents()
@@ -354,6 +356,7 @@ class AssetDownloadTaskView(gui3d.TaskView):
         self.tableView.setModel(self.model)
         self.tableView.clicked.connect(self._tableClick)
         self.tableView.setSelectionBehavior(QTableView.SelectRows)
+        self.tableView.setSortingEnabled(True)
 
         layout.addWidget(self.tableView)
 
