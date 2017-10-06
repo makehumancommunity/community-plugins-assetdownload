@@ -69,12 +69,22 @@ class AssetTableModel(QtCore.QAbstractTableModel):
             row = index.row()
             column = index.column()
             value = self.__data[row][column]
-            return QtCore.QString(value)
+
+            if mhapi.utility.isPython3():
+                return str(value)
+            else:
+                return QtCore.QString(value)
 
     def headerData(self, section, orientation = QtCore.Qt.Horizontal, role=QtCore.Qt.DisplayRole):
         if role == QtCore.Qt.DisplayRole and self.__headers is not None:
             if orientation == QtCore.Qt.Horizontal:
-                return QtCore.QString(self.__headers[section])
+                if mhapi.utility.isPython3():
+                    return self.__headers[section]
+                else:
+                    return QtCore.QString(self.__headers[section])
             else:
-                return QtCore.QString(str(section + 1))
+                if mhapi.utility.isPython3():
+                    return str(section + 1)
+                else:
+                    return QtCore.QString(str(section + 1))
 
