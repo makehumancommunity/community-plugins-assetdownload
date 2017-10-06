@@ -98,7 +98,7 @@ class AssetDownloadTaskView(gui3d.TaskView):
         self.filterBox.addWidget(self.cbxSubTypes)
 
         self.authors = ["-- any --"]
-        self.authors.extend(self.assetdb.getKnownAuthors())
+        self.authors.extend(sorted(self.assetdb.getKnownAuthors(), key=lambda s: s.lower()))
 
         self.filterBox.addWidget(mhapi.ui.createLabel("\nAsset author"))
         self.cbxAuthors = mhapi.ui.createComboBox(self.authors)
@@ -336,6 +336,14 @@ class AssetDownloadTaskView(gui3d.TaskView):
     def _onSyncFinished(self):
         self.log.trace("onSyncFinished")
         self.showMessage("Asset DB is now synchronized")
+
+        self.authors = ["-- any --"]
+        self.authors.extend(sorted(self.assetdb.getKnownAuthors(), key=lambda s: s.lower()))
+
+        self.cbxAuthors.clear()
+
+        for author in self.authors:
+            self.cbxAuthors.addItem(author)
 
     def _onSyncProgress(self,prog=0.0):
         self.log.trace("onSyncProgress")
