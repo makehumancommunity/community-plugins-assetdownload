@@ -37,14 +37,24 @@ from core import G
 
 mhapi = gui3d.app.mhapi
 
-if mhapi.utility.isPySideAvailable():
-    from PySide import QtGui
-    from PySide import QtCore
-    from PySide.QtGui import *
+if mhapi.utility.isPython3():
+    from PyQt5 import QtGui
+    from PyQt5 import QtCore
+    from PyQt5.QtGui import *
+    from PyQt5 import QtWidgets
+    from PyQt5.QtWidgets import *
+    from PyQt5.QtCore import *
 else:
-    from PyQt4 import QtGui
-    from PyQt4 import QtCore
-    from PyQt4.QtGui import *
+    if mhapi.utility.isPySideAvailable():
+        from PySide import QtGui
+        from PySide import QtCore
+        from PySide.QtGui import *
+        from PySide.QtCore import *
+    else:
+        from PyQt4 import QtGui
+        from PyQt4 import QtCore
+        from PyQt4.QtGui import *
+        from PyQt4.QtCore import *
 
 from .assetdb import AssetDB
 from .tablemodel import AssetTableModel
@@ -358,9 +368,9 @@ class AssetDownloadTaskView(gui3d.TaskView):
         self.headers = ["Info"]
         self.model = AssetTableModel(self.data, self.headers)
 
-        layout = QtGui.QVBoxLayout()
+        layout = QVBoxLayout()
 
-        self.tableView = QtGui.QTableView()
+        self.tableView = QTableView()
         self.tableView.setModel(self.model)
         self.tableView.clicked.connect(self._tableClick)
         self.tableView.setSelectionBehavior(QTableView.SelectRows)
@@ -368,7 +378,7 @@ class AssetDownloadTaskView(gui3d.TaskView):
 
         layout.addWidget(self.tableView)
 
-        self.mainPanel = QtGui.QWidget()
+        self.mainPanel = QWidget()
         self.mainPanel.setLayout(layout)
 
         self.addTopWidget(self.mainPanel)
@@ -378,7 +388,7 @@ class AssetDownloadTaskView(gui3d.TaskView):
     def _setupDetails(self):
         self.log.trace("Enter")
 
-        layout = QtGui.QVBoxLayout()
+        layout = QVBoxLayout()
 
         self.detailsName = mhapi.ui.createLabel("<h1>Selected title</h1>")
         layout.addWidget(self.detailsName)
@@ -391,16 +401,15 @@ class AssetDownloadTaskView(gui3d.TaskView):
         layout.addWidget(self.detailsExtras)
 
         self.detailsRender = gui.TextView()
-        self.detailsRender.setPixmap(QtGui.QPixmap(os.path.abspath(self.notfound)))
+        self.detailsRender.setPixmap(QPixmap(os.path.abspath(self.notfound)))
         layout.addWidget(self.detailsRender)
 
         layout.addStretch(1)
 
-        self.detailsPanel = QtGui.QWidget()
+        self.detailsPanel = QWidget()
         self.detailsPanel.setLayout(layout)
 
         self.addTopWidget(self.detailsPanel)
-
         self.detailsPanel.hide()
 
     def _tableClick(self):
@@ -458,10 +467,10 @@ class AssetDownloadTaskView(gui3d.TaskView):
             self.thumbnail.setGeometry(0, 0, 800, 600)
 
     def showMessage(self,message,title="Information"):
-        self.msg = QtGui.QMessageBox()
-        self.msg.setIcon(QtGui.QMessageBox.Information)
+        self.msg = QMessageBox()
+        self.msg.setIcon(QMessageBox.Information)
         self.msg.setText(message)
         self.msg.setWindowTitle(title)
-        self.msg.setStandardButtons(QtGui.QMessageBox.Ok)
+        self.msg.setStandardButtons(QMessageBox.Ok)
         self.msg.show()
 

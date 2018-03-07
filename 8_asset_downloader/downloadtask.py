@@ -27,24 +27,46 @@ from progress import Progress
 
 mhapi = gui3d.app.mhapi
 
-if mhapi.utility.isPySideAvailable():
-    from PySide import QtGui
-    from PySide import QtCore
-    from PySide.QtGui import *
-    from PySide.QtCore import *
+qtSignal = None
+qtSlot = None
+
+if mhapi.utility.isPython3():
+    from PyQt5 import QtGui
+    from PyQt5 import QtCore
+    from PyQt5.QtGui import *
+    from PyQt5 import QtWidgets
+    from PyQt5.QtWidgets import *
+    from PyQt5.QtCore import *
+    qtSignal = QtCore.pyqtSignal
+    qtSlot = QtCore.pyqtSlot
 else:
-    from PyQt4 import QtGui
-    from PyQt4 import QtCore
-    from PyQt4.QtGui import *
-    from PyQt4.QtCore import *
+    if mhapi.utility.isPySideAvailable():
+        from PySide import QtGui
+        from PySide import QtCore
+        from PySide.QtGui import *
+        from PySide.QtCore import *
+        qtSignal = QtCore.Signal
+        qtSlot = QtCore.Slot
+    else:
+        from PyQt4 import QtGui
+        from PyQt4 import QtCore
+        from PyQt4.QtGui import *
+        from PyQt4.QtCore import *
+        qtSignal = QtCore.pyqtSignal
+        qtSlot = QtCore.pyqtSlot
+
 
 class DownloadThread(QThread):
+
+    signalProgress = qtSignal(float)
+    signalFinished = qtSignal()
 
     def __init__(self, downloadTuples, parent = None):
         QThread.__init__(self, parent)
         self.log = mhapi.utility.getLogChannel("assetdownload")
         self.exiting = False
         self.downloadTuples = downloadTuples
+        self.log.debug("Downloadtuples length:",len(downloadTuples))
         self.request = mhapi.utility.getCompatibleUrlFetcher()
 
     def run(self):
@@ -87,12 +109,15 @@ class DownloadThread(QThread):
 
     def onProgress(self, prog = 0.0):
         self.log.trace("Enter")
-        self.emit(SIGNAL("onProgress(double)"), prog)
+        self.log.debug("prog",prog)
+        self.log.debug("prog type",type(prog))
+        self.signalProgress.emit(prog)
+        #self.emit(SIGNAL("onProgress(double)"), prog)
 
     def onFinished(self):
         self.log.trace("Enter")
-        #self.onProgress(1.0)
-        self.emit(SIGNAL("onFinished()"))
+        self.signalFinished.emit()
+        #self.emit(SIGNAL("onFinished()"))
 
     def __del__(self):
         self.log.trace("Enter")
@@ -113,8 +138,11 @@ class DownloadTask():
 
         self.downloadThread = DownloadThread(downloadTuples)
 
-        parentWidget.connect(self.downloadThread, SIGNAL("onProgress(double)"), self._onProgress)
-        parentWidget.connect(self.downloadThread, SIGNAL("onFinished()"), self._onFinished)
+        self.downloadThread.signalProgress.connect(self._onProgress)
+        self.downloadThread.signalFinished.connect(self._onFinished)
+
+        #parentWidget.connect(self.downloadThread, SIGNAL("onProgress(double)"), self._onProgress)
+        #parentWidget.connect(self.downloadThread, SIGNAL("onFinished()"), self._onFinished)
 
         self.progress = Progress()
 
@@ -125,6 +153,10 @@ class DownloadTask():
 
     def _onProgress(self, prog=0.0):
         self.log.trace("_onProgress",prog)
+
+        self.log.debug("prog",prog)
+        self.log.debug("prog type",type(prog))
+
         self.progress(prog,"Downloading files...")
 
         if self.onProgress is not None:
@@ -136,8 +168,12 @@ class DownloadTask():
     def _onFinished(self):
         self.log.trace("Enter")
         self.progress(1.0)
-        self.parentWidget.disconnect(self.downloadThread, SIGNAL("onProgress(double)"), self._onProgress)
-        self.parentWidget.disconnect(self.downloadThread, SIGNAL("onFinished()"), self._onFinished)
+
+        self.downloadThread.signalProgress.disconnect(self._onProgress)
+        self.downloadThread.signalFinished.disconnect(self._onFinished)
+
+        #self.parentWidget.disconnect(self.downloadThread, SIGNAL("onProgress(double)"), self._onProgress)
+        #self.parentWidget.disconnect(self.downloadThread, SIGNAL("onFinished()"), self._onFinished)
 
         if self.onFinished is not None:
             self.log.trace("onFinished callback is defined")

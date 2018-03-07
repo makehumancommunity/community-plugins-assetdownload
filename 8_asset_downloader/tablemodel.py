@@ -37,14 +37,21 @@ from core import G
 
 mhapi = gui3d.app.mhapi
 
-if mhapi.utility.isPySideAvailable():
-    from PySide import QtGui
-    from PySide import QtCore
-    from PySide.QtGui import *
+if mhapi.utility.isPython3():
+    from PyQt5 import QtGui
+    from PyQt5 import QtCore
+    from PyQt5.QtGui import *
+    from PyQt5 import QtWidgets
+    from PyQt5.QtWidgets import *
 else:
-    from PyQt4 import QtGui
-    from PyQt4 import QtCore
-    from PyQt4.QtGui import *
+    if mhapi.utility.isPySideAvailable():
+        from PySide import QtGui
+        from PySide import QtCore
+        from PySide.QtGui import *
+    else:
+        from PyQt4 import QtGui
+        from PyQt4 import QtCore
+        from PyQt4.QtGui import *
 
 
 class AssetTableModel(QtCore.QAbstractTableModel):
