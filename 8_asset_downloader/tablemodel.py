@@ -43,21 +43,23 @@ if mhapi.utility.isPython3():
     from PyQt5.QtGui import *
     from PyQt5 import QtWidgets
     from PyQt5.QtWidgets import *
+    from PyQt5.QtCore import *
 else:
     if mhapi.utility.isPySideAvailable():
         from PySide import QtGui
         from PySide import QtCore
         from PySide.QtGui import *
+        from PySide.QtCore import *
     else:
         from PyQt4 import QtGui
         from PyQt4 import QtCore
         from PyQt4.QtGui import *
+        from PyQt4.QtCore import *
 
-
-class AssetTableModel(QtCore.QAbstractTableModel):
+class AssetTableModel(QAbstractTableModel):
 
     def __init__(self, data, headers, parent=None):
-        QtCore.QAbstractTableModel.__init__(self,parent)
+        QAbstractTableModel.__init__(self,parent)
         self.log = mhapi.utility.getLogChannel("assetdownload")
 
         self.__data=data     # Initial Data
@@ -72,7 +74,7 @@ class AssetTableModel(QtCore.QAbstractTableModel):
         return len(self.__headers)
 
     def data ( self , index , role ):
-        if role == QtCore.Qt.DisplayRole:
+        if role == Qt.DisplayRole:
             row = index.row()
             column = index.column()
             value = self.__data[row][column]
@@ -80,18 +82,18 @@ class AssetTableModel(QtCore.QAbstractTableModel):
             if mhapi.utility.isPython3():
                 return str(value)
             else:
-                return QtCore.QString(value)
+                return QString(value)
 
-    def headerData(self, section, orientation = QtCore.Qt.Horizontal, role=QtCore.Qt.DisplayRole):
-        if role == QtCore.Qt.DisplayRole and self.__headers is not None:
-            if orientation == QtCore.Qt.Horizontal:
+    def headerData(self, section, orientation = Qt.Horizontal, role=Qt.DisplayRole):
+        if role == Qt.DisplayRole and self.__headers is not None:
+            if orientation == Qt.Horizontal:
                 if mhapi.utility.isPython3():
                     return self.__headers[section]
                 else:
-                    return QtCore.QString(self.__headers[section])
+                    return QString(self.__headers[section])
             else:
                 if mhapi.utility.isPython3():
                     return str(section + 1)
                 else:
-                    return QtCore.QString(str(section + 1))
+                    return QString(str(section + 1))
 
