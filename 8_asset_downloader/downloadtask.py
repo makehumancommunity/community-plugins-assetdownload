@@ -157,7 +157,7 @@ class DownloadTask():
         self.log.debug("prog",prog)
         self.log.debug("prog type",type(prog))
 
-        self.progress(prog,"Downloading files...")
+        self.progress(prog,desc="Downloading files...")
 
         if self.onProgress is not None:
             self.log.trace("onProgress callback is defined")
