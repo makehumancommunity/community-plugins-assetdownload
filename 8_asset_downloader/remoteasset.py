@@ -225,7 +225,7 @@ class RemoteAsset():
     def getThumbPath(self):
         self.log.trace("Enter")
         if "screenshot" in self.localFiles:
-            return self.localFiles["thumb"]
+            return self.localFiles.get("thumb")
         else:
             return None
 
