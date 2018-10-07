@@ -130,7 +130,7 @@ class RemoteAsset():
             name = ftype
 
             if name == "illustration":
-                name == "screenshot"
+                name = "screenshot"
             if name == "render":
                 name = "screenshot"
 
@@ -224,8 +224,8 @@ class RemoteAsset():
 
     def getThumbPath(self):
         self.log.trace("Enter")
-        if "screenshot" in self.localFiles:
-            return self.localFiles.get("thumb")
+        if "thumb" in self.localFiles:
+            return self.localFiles["thumb"]
         else:
             return None
 

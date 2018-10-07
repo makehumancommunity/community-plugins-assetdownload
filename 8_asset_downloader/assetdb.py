@@ -356,8 +356,9 @@ class AssetDB():
         self.log.debug("srcThumb",srcThumb)
         self.log.debug("destThumb", os.path.join(dn,name + ".thumb"))
 
-        destThumb = os.path.join(dn,name + ".thumb")
-        shutil.copyfile(srcThumb,destThumb)
+        if srcThumb:
+            destThumb = os.path.join(dn,name + ".thumb")
+            shutil.copyfile(srcThumb,destThumb)
 
         assetType = remoteAsset.getType()
         assetId = remoteAsset.getId()
