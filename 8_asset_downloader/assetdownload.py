@@ -369,6 +369,7 @@ class AssetDownloadTaskView(gui3d.TaskView):
         self.log.trace("Enter")
         self.data = [["No filter"]]
         self.headers = ["Info"]
+
         self.model = AssetTableModel(self.data, self.headers)
 
         layout = QVBoxLayout()
@@ -423,13 +424,22 @@ class AssetDownloadTaskView(gui3d.TaskView):
 
         indexes = self.tableView.selectionModel().selectedRows()
         for index in sorted(indexes):
-            currentRow = index.row()
+            currentRow = index
 
         if currentRow is None:
             self.log.debug("No row is selected")
             return;
 
-        self.log.debug("Currently selected row index", currentRow)
+        self.log.debug("Currently selected row", currentRow)
+
+        currentRow = self.proxymodel.mapToSource(currentRow)
+
+        self.log.debug("Currently selected mapped row", currentRow)
+
+        currentRow = currentRow.row()
+
+        self.log.debug("Currently selected mapped row index", currentRow)
+
         self.log.spam("Currently selected row data", self.data[currentRow])
 
         assetId = int(self.data[currentRow][0])
