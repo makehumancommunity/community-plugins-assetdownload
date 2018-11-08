@@ -229,6 +229,11 @@ class AssetDownloadTaskView(gui3d.TaskView):
         self.currentlySelectedRemoteAsset = None
         self.thumbnail.setPixmap(QtGui.QPixmap(os.path.abspath(self.notfound)))
 
+        self.tableView.show()
+        self.detailsPanel.hide()
+        self.isShowingDetails = False
+        self.btnDetails.setText("View details")
+
     def _setupSelectedBox(self):
         self.log.trace("Enter")
         self.selectBox = mhapi.ui.createGroupBox("Selected")
@@ -262,7 +267,7 @@ class AssetDownloadTaskView(gui3d.TaskView):
         self.log.trace("Enter")
 
         if self.isShowingDetails:
-            self.mainPanel.show()
+            self.tableView.show()
             self.detailsPanel.hide()
             self.isShowingDetails = False
             self.btnDetails.setText("View details")
@@ -275,7 +280,7 @@ class AssetDownloadTaskView(gui3d.TaskView):
         title = self.currentlySelectedRemoteAsset.getTitle()
         self.log.debug("Request details for asset with title",title)
 
-        self.mainPanel.hide()
+        self.tableView.hide()
         self.detailsPanel.show()
         self.btnDetails.setText("Hide details")
         self.isShowingDetails = True
