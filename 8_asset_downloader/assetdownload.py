@@ -236,6 +236,9 @@ class AssetDownloadTaskView(gui3d.TaskView):
         self.thumbnail = self.selectBox.addWidget(gui.TextView())
         self.thumbnail.setPixmap(QtGui.QPixmap(os.path.abspath(self.notfound)))
         self.thumbnail.setGeometry(0,0,128,128)
+        self.thumbnail.setMaximumHeight(128)
+        self.thumbnail.setMaximumWidth(128)
+        self.thumbnail.setScaledContents(True)
 
         self.selectBox.addWidget(mhapi.ui.createLabel(" "))
 
