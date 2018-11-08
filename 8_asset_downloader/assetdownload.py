@@ -378,13 +378,10 @@ class AssetDownloadTaskView(gui3d.TaskView):
         self.tableView.clicked.connect(self._tableClick)
         self.tableView.setSelectionBehavior(QTableView.SelectRows)
         self.tableView.setSortingEnabled(True)
+        self.tableView.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.tableView.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
 
-        layout.addWidget(self.tableView)
-
-        self.mainPanel = QWidget()
-        self.mainPanel.setLayout(layout)
-
-        self.addTopWidget(self.mainPanel)
+        self.addTopWidget(self.tableView)
 
         self.hasFilter = False
 
