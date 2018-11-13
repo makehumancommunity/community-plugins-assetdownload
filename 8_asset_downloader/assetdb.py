@@ -29,9 +29,11 @@ import os
 import re
 import platform
 import calendar
+import sys
 import datetime
 import shutil
 
+from zipfile import ZipFile
 from progress import Progress
 
 from core import G
@@ -53,6 +55,7 @@ class AssetDB():
         self.root = mhapi.locations.getUserDataPath("community-assets")
         self.remotecache = os.path.join(self.root,"remotecache")
         self.remotedb = os.path.join(self.root,"remote.json")
+        self.seedzip = os.path.join(self.root, "seed.zip")
         self.localdb = os.path.join(self.root,"local.json")
         self.log = mhapi.utility.getLogChannel("assetdownload")
 
@@ -288,7 +291,14 @@ class AssetDB():
 
     def synchronizeRemote(self, parentWidget, onFinished=None, onProgress=None, downloadScreenshots=True, downloadThumbnails=True):
         self.log.trace("Enter")
-        filesToDownload = [["http://www.makehumancommunity.org/sites/default/files/assets.json",self.remotedb]]
+        filesToDownload = []
+        if not os.path.exists(self.root):
+            filesToDownload.append(["http://download.tuxfamily.org/makehuman/assets/seed.zip",self.seedzip])
+            filesToDownload.append(["http://www.makehumancommunity.org/sites/default/files/assets.json", self.remotedb + ".keep"])
+        else:
+            filesToDownload.append(["http://www.makehumancommunity.org/sites/default/files/assets.json",self.remotedb])
+
+        print(filesToDownload)
 
         self._syncParentWidget = parentWidget
         self._synconFinished = onFinished
@@ -301,6 +311,19 @@ class AssetDB():
 
     def _syncRemote1Finished(self):
         self.log.trace("Enter")
+
+        if os.path.exists(self.seedzip):
+            print("HAS ZIP")
+            zip = ZipFile(self.seedzip,'r')
+            if not os.path.exists(self.root):
+                os.makedirs(self.root)
+            zip.extractall(self.root)
+            zip.close()
+            if os.path.exists(self.remotedb):
+                os.remove(self.remotedb)
+            os.rename(self.remotedb + ".keep", self.remotedb)
+            os.remove(self.seedzip)
+
         self._loadRemoteDB()
 
         filesToDownload = []

@@ -79,6 +79,15 @@ class AssetDownloadTaskView(gui3d.TaskView):
         self.currentlySelectedRemoteAsset = None
         self.isShowingDetails = False
 
+    def onShow(self, event):
+
+        if not os.path.exists(self.assetdb.root):
+            msg = "It seem that the asset database has not been downloaded yet. The asset database is needed in order to search for assets.\n\n"
+            msg = msg + "Downloading the database for the first time can take a long time on a slow connection, and it is normal that it occasionally "
+            msg = msg + "looks as if the download has stalled. Updating the database after it has been downloaded will be significantly faster.\n\n"
+            msg = msg + "After closing this dialog, click 'synchronize' in order to start downloading the asset database."
+            self.showMessage(msg)
+
     def _setupFilterBox(self):
         self.log.trace("Enter")
         self.filterBox = mhapi.ui.createGroupBox("Filter assets")
