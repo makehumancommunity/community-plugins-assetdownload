@@ -22,6 +22,8 @@ import socket
 import json
 import os
 import time
+import sys
+import io
 
 from progress import Progress
 
@@ -91,11 +93,51 @@ class DownloadThread(QThread):
             remote = remote.replace(" ", "%20")
 
             try:
-                data = self.request.urlopen(remote).read()
-                with open(local,"wb") as f:
-                    f.write(data)
-                    self.log.debug("Successfully downloaded",remote)
+                requrl = self.request.urlopen(remote)
+                cl = requrl.info().get('Content-Length').strip()
+                self.log.debug("Content length", cl)
+
+                megabytes = 0
+
+                if cl and str(cl).isnumeric():
+                    megabytes = float(cl) / 1000000.0
+
+                self.log.debug("Content megabytes", megabytes)
+
+                if megabytes < 1.0:
+                    self.log.debug("File to be downloaded in one chunk, size is less than one meg")
+                    data = requrl.read()
+                    with open(local,"wb") as f:
+                        f.write(data)
+                        self.log.debug("Successfully downloaded",remote)
+                else:
+                    # Very large file
+                    self.log.info("File to be downloaded in chunks, size is", megabytes)
+                    buf = io.BytesIO()
+                    size = 0
+                    megabytes = int(int(cl) / 1000000) + 1
+                    while True:
+                        buf1 = requrl.read(100 * 1000) # 100kb size blocks
+                        if not buf1:
+                            break
+                        buf.write(buf1)
+                        size += len(buf1)
+                        self.log.spam("Downloaded buffer size",size)
+                        sizemegs = int(size / 1000000)
+
+                        now = time.time()
+                        now = now - 0.5
+                        if now > lastReport:
+                            lastReport = now
+                            fileProgress = float(sizemegs) / float(megabytes)
+                            fileProgress = float(current - 1) + fileProgress
+                            self.onProgress(float(fileProgress) / float(total))
+                    with open(local,"wb") as f:
+                        f.write(buf.getvalue())
+                        self.log.debug("Successfully downloaded",remote)
+
             except:
+                self.log.error("Exception in download",sys.exc_info())
                 self.log.warn("Could not download",remote)
 
             now = time.time()
