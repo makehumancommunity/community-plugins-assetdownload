@@ -99,8 +99,11 @@ class DownloadThread(QThread):
 
                 megabytes = 0
 
-                if cl and str(cl).isnumeric():
-                    megabytes = float(cl) / 1000000.0
+                if cl:
+                    if mhapi.utility.isPy3 and str(cl).isnumeric():
+                        megabytes = float(cl) / 1000000.0
+                    if not mhapi.utility.isPy3 and unicode(cl).isnumeric():
+                        megabytes = float(cl) / 1000000.0
 
                 self.log.debug("Content megabytes", megabytes)
 
