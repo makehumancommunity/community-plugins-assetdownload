@@ -293,7 +293,7 @@ class AssetDB():
         self.log.trace("Enter")
         filesToDownload = []
         if not os.path.exists(self.root):
-            filesToDownload.append(["http://download.tuxfamily.org/makehuman/assets/seed.zip",self.seedzip])
+            filesToDownload.append(["http://download.tuxfamily.org/makehuman/assets/asset_downloader_db_seed.zip",self.seedzip])
             filesToDownload.append(["http://www.makehumancommunity.org/sites/default/files/assets.json", self.remotedb + ".keep"])
         else:
             filesToDownload.append(["http://www.makehumancommunity.org/sites/default/files/assets.json",self.remotedb])
@@ -313,7 +313,7 @@ class AssetDB():
         self.log.trace("Enter")
 
         if os.path.exists(self.seedzip):
-            print("HAS ZIP")
+            self.log.debug("HAS ZIP",self.seedzip)
             zip = ZipFile(self.seedzip,'r')
             if not os.path.exists(self.root):
                 os.makedirs(self.root)
