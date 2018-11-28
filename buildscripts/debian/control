@@ -8,7 +8,6 @@ Homepage: http://www.makehumancommunity.org
 
 Package: makehuman-community-plugins-assetdownloader
 Architecture: all
-Recommends: blender
 Depends: ${misc:Depends}, makehuman-community, makehuman-community-plugins-mhapi
 Description: Asset downloader functionality for MakeHuman.
  This plugins provides a UI for downloading assets.
