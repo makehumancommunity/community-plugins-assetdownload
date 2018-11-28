@@ -339,26 +339,32 @@ class AssetDownloadTaskView(gui3d.TaskView):
         syncinstr = syncinstr + "assets, you need to\n"
         syncinstr = syncinstr + "download the database\n"
         syncinstr = syncinstr + "from the server.\n\n"
-        syncinstr = syncinstr + "You only need to do\n"
-        syncinstr = syncinstr + "this the first time\n"
-        syncinstr = syncinstr + "and when you want to\n"
-        syncinstr = syncinstr + "check if there are \n"
-        syncinstr = syncinstr + "new assets available.\n"
+        syncinstr = syncinstr + "Later, you only need\n"
+        syncinstr = syncinstr + "to do this when you \n"
+        syncinstr = syncinstr + "want to check for\n"
+        syncinstr = syncinstr + "new assets.\n\n"
+        syncinstr = syncinstr + "Optionally you can\n"
+        syncinstr = syncinstr + "get all screenshots.\n"
+        syncinstr = syncinstr + "This is hundreds of\n"
+        syncinstr = syncinstr + "megabytes, so avoid\n"
+        syncinstr = syncinstr + "unless important.\n"
 
         self.syncBox.addWidget(mhapi.ui.createLabel(syncinstr))
+
+        self.fetchScreens = self.syncBox.addWidget(gui.CheckBox('get screenshots'))
 
         self.btnSync = mhapi.ui.createButton("Synchronize")
         self.syncBox.addWidget(self.btnSync)
 
         @self.btnSync.mhEvent
         def onClicked(event):
-            self._onBtnSyncClick()
+            self._onBtnSyncClick(downloadScreenshots=self.fetchScreens.selected)
 
         self.addRightWidget(self.syncBox)
 
-    def _onBtnSyncClick(self):
+    def _onBtnSyncClick(self, downloadScreenshots=False):
         self.log.trace("Enter")
-        self.assetdb.synchronizeRemote(self.syncBox,self._onSyncFinished,self._onSyncProgress)
+        self.assetdb.synchronizeRemote(self.syncBox,self._onSyncFinished,self._onSyncProgress, downloadScreenshots=downloadScreenshots)
 
     def _onSyncFinished(self):
         self.log.trace("onSyncFinished")
@@ -468,6 +474,8 @@ class AssetDownloadTaskView(gui3d.TaskView):
         else:
             self.log.debug("Asset has no thumbnail")
 
+        self.thumbnail.setGeometry(0, 0, 128, 128)
+
         self.currentlySelectedRemoteAsset = remoteAsset
 
         self.detailsName.setText("<h1>" + remoteAsset.getTitle() + "</h1>")
@@ -485,10 +493,13 @@ class AssetDownloadTaskView(gui3d.TaskView):
 
         if render is not None and render != "" and os.path.exists(render):
             self.detailsRender.setPixmap(QtGui.QPixmap(os.path.abspath(render)))
-            self.thumbnail.setGeometry(0, 0, 128, 128)
         else:
-            self.detailsRender.setPixmap(QtGui.QPixmap(os.path.abspath(self.notfound)))
-            self.thumbnail.setGeometry(0, 0, 800, 600)
+            if thumbPath and os.path.exists(thumbPath):
+                self.detailsRender.setPixmap(QtGui.QPixmap(os.path.abspath(thumbPath)))
+            else:
+                self.detailsRender.setPixmap(QtGui.QPixmap(os.path.abspath(self.notfound)))
+
+        self.detailsRender.setGeometry(0, 0, 800, 600)
 
     def showMessage(self,message,title="Information"):
         self.msg = QMessageBox()
