@@ -55,7 +55,8 @@ class AssetDB():
         self.root = mhapi.locations.getUserDataPath("community-assets")
         self.remotecache = os.path.join(self.root,"remotecache")
         self.remotedb = os.path.join(self.root,"remote.json")
-        self.seedzip = os.path.join(self.root, "seed.zip")
+        self.thumbseed = os.path.join(self.root, "asset-db-thumbnails.zip")
+        self.screenseed = os.path.join(self.root, "asset-db-screenshots.zip")
         self.localdb = os.path.join(self.root,"local.json")
         self.log = mhapi.utility.getLogChannel("assetdownload")
 
@@ -292,13 +293,29 @@ class AssetDB():
     def synchronizeRemote(self, parentWidget, onFinished=None, onProgress=None, downloadScreenshots=True, downloadThumbnails=True):
         self.log.trace("Enter")
         filesToDownload = []
+
+        self.downloadScreenshots = downloadScreenshots
+        self.downloadThumbnails = downloadThumbnails
+
+        self.overrideProgressLength = 2
+        self.overrideProgressAfterDownloads = 1
+
         if not os.path.exists(self.root):
-            filesToDownload.append(["http://download.tuxfamily.org/makehuman/assets/asset_downloader_db_seed.zip",self.seedzip])
+            if downloadThumbnails:
+                filesToDownload.append(["http://download.tuxfamily.org/makehuman/assets/asset-db-thumbnails.zip",self.thumbseed])
+                self.overrideProgressLength = self.overrideProgressLength + 2
+                self.overrideProgressAfterDownloads = self.overrideProgressAfterDownloads + 1
+            if downloadScreenshots:
+                filesToDownload.append(["http://download.tuxfamily.org/makehuman/assets/asset-db-screenshots.zip",self.screenseed])
+                self.overrideProgressLength = self.overrideProgressLength + 2
+                self.overrideProgressAfterDownloads = self.overrideProgressAfterDownloads + 1
             filesToDownload.append(["http://www.makehumancommunity.org/sites/default/files/assets.json", self.remotedb + ".keep"])
         else:
             filesToDownload.append(["http://www.makehumancommunity.org/sites/default/files/assets.json",self.remotedb])
 
-        print(filesToDownload)
+        self.log.debug("overrideProgressLength",self.overrideProgressLength)
+        self.log.debug("overrideProgressAfterDownloads", self.overrideProgressAfterDownloads)
+        self.log.debug("filesToDownload",filesToDownload)
 
         self._syncParentWidget = parentWidget
         self._synconFinished = onFinished
@@ -312,40 +329,83 @@ class AssetDB():
     def _syncRemote1Finished(self):
         self.log.trace("Enter")
 
-        if os.path.exists(self.seedzip):
-            self.log.debug("HAS ZIP",self.seedzip)
-            zip = ZipFile(self.seedzip,'r')
+        progress = Progress()
+        current = self.overrideProgressAfterDownloads
+        prog = float(current) / float(self.overrideProgressLength)
+        progress(prog, desc="Unzipping seed zips")
+
+        if os.path.exists(self.thumbseed):
+            self.log.debug("HAS THUMB ZIP",self.thumbseed)
+            zip = ZipFile(self.thumbseed,'r')
             if not os.path.exists(self.root):
                 os.makedirs(self.root)
             zip.extractall(self.root)
             zip.close()
             if os.path.exists(self.remotedb):
                 os.remove(self.remotedb)
+            os.remove(self.thumbseed)
+            current = current + 1
+            prog = float(current) / float(self.overrideProgressLength)
+            progress(prog, desc="Unzipping seed zips")
+        else:
+            self.log.debug("Did not have thumb seed zip")
+
+        if os.path.exists(self.screenseed):
+            self.log.debug("HAS SCREEN ZIP",self.screenseed)
+            zip = ZipFile(self.screenseed,'r')
+            if not os.path.exists(self.root):
+                os.makedirs(self.root)
+            zip.extractall(self.root)
+            zip.close()
+            if os.path.exists(self.remotedb):
+                os.remove(self.remotedb)
+            os.remove(self.screenseed)
+        else:
+            self.log.debug("Did not have screen seed zip")
+
+        current = current + 1
+        prog = float(current) / float(self.overrideProgressLength)
+        progress(prog, desc="Checking for additional files to download")
+
+        self.overrideProgressLength = None
+        self.overrideProgressAfterDownloads = None
+
+        if os.path.exists(self.remotedb + ".keep"):
             os.rename(self.remotedb + ".keep", self.remotedb)
-            os.remove(self.seedzip)
 
         self._loadRemoteDB()
 
         filesToDownload = []
 
+        self.log.debug("downloadScreenshots",self.downloadScreenshots)
+        self.log.debug("downloadThumbnails",self.downloadThumbnails)
+
         for assetType in self.remoteAssets.keys():
             for assetId in self.remoteAssets[assetType].keys():
                 remoteAsset = self.remoteAssets[assetType][assetId]
-                tuples = remoteAsset.getDownloadTuples(ignoreExisting=True,onlyMeta=True,excludeScreenshot=False,excludeThumb=False)
+                tuples = remoteAsset.getDownloadTuples(ignoreExisting=True,onlyMeta=True,excludeScreenshot=not self.downloadScreenshots,excludeThumb=not self.downloadThumbnails)
                 self.log.spam("Tuples",tuples)
-
                 filesToDownload.extend(tuples)
 
-        self.log.spam("filesToDownload",filesToDownload)
+        self.log.debug("filesToDownload",filesToDownload)
+
+        progress(1.0)
+
         self._downloadTask = DownloadTask(self._syncParentWidget,filesToDownload,self._syncRemote2Finished,self._syncRemote2Progress)
+
 
     def _syncRemote2Progress(self,prog = 0.0):
         self.log.trace("Enter")
 
     def _syncRemote2Finished(self):
         self.log.trace("Enter")
+
+        progress = Progress()
+        progress(0.1, desc="Rebuilding local asset DB")
         self._rebuildLocalDB()
+        progress(0.5, desc="Loading local asset DB")
         self._loadLocalDB()
+        progress(1.0)
 
         if self._synconFinished is not None:
             self._synconFinished()
