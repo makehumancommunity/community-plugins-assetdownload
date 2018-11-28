@@ -63,13 +63,14 @@ class DownloadThread(QThread):
     signalProgress = qtSignal(float)
     signalFinished = qtSignal()
 
-    def __init__(self, downloadTuples, parent = None):
+    def __init__(self, downloadTuples, parent = None, overrideProgressSteps=None):
         QThread.__init__(self, parent)
         self.log = mhapi.utility.getLogChannel("assetdownload")
         self.exiting = False
         self.downloadTuples = downloadTuples
         self.log.debug("Downloadtuples length:",len(downloadTuples))
         self.request = mhapi.utility.getCompatibleUrlFetcher()
+        self.overrideProgressSteps = overrideProgressSteps
 
     def run(self):
         self.log.trace("Enter")
@@ -134,7 +135,10 @@ class DownloadThread(QThread):
                             lastReport = now
                             fileProgress = float(sizemegs) / float(megabytes)
                             fileProgress = float(current - 1) + fileProgress
-                            self.onProgress(float(fileProgress) / float(total))
+                            if self.overrideProgressSteps is None:
+                                self.onProgress(float(fileProgress) / float(total))
+                            else:
+                                self.onProgress(float(fileProgress) / float(self.overrideProgressSteps))
                     with open(local,"wb") as f:
                         f.write(buf.getvalue())
                         self.log.debug("Successfully downloaded",remote)
@@ -147,22 +151,21 @@ class DownloadThread(QThread):
             now = now - 0.5
             if now > lastReport:
                 lastReport = now
-                self.onProgress(float(current) / float(total))
+                if self.overrideProgressSteps is None:
+                    self.onProgress(float(current) / float(total))
+                else:
+                    self.onProgress(float(current) / float(self.overrideProgressSteps))
 
         self.onFinished()
         self.exiting = True
 
     def onProgress(self, prog = 0.0):
-        self.log.trace("Enter")
-        self.log.debug("prog",prog)
-        self.log.debug("prog type",type(prog))
+        self.log.trace("onProgress",prog)
         self.signalProgress.emit(prog)
-        #self.emit(SIGNAL("onProgress(double)"), prog)
 
     def onFinished(self):
         self.log.trace("Enter")
         self.signalFinished.emit()
-        #self.emit(SIGNAL("onFinished()"))
 
     def __del__(self):
         self.log.trace("Enter")
@@ -174,20 +177,18 @@ class DownloadThread(QThread):
 
 class DownloadTask():
 
-    def __init__(self, parentWidget, downloadTuples, onFinished=None, onProgress=None):
+    def __init__(self, parentWidget, downloadTuples, onFinished=None, onProgress=None, overrideProgressSteps=None):
         self.log = mhapi.utility.getLogChannel("assetdownload")
 
         self.parentWidget = parentWidget
         self.onFinished = onFinished
         self.onProgress = onProgress
+        self.overrideProgressSteps = overrideProgressSteps
 
-        self.downloadThread = DownloadThread(downloadTuples)
+        self.downloadThread = DownloadThread(downloadTuples, overrideProgressSteps = self.overrideProgressSteps)
 
         self.downloadThread.signalProgress.connect(self._onProgress)
         self.downloadThread.signalFinished.connect(self._onFinished)
-
-        #parentWidget.connect(self.downloadThread, SIGNAL("onProgress(double)"), self._onProgress)
-        #parentWidget.connect(self.downloadThread, SIGNAL("onFinished()"), self._onFinished)
 
         self.progress = Progress()
 
@@ -199,9 +200,6 @@ class DownloadTask():
     def _onProgress(self, prog=0.0):
         self.log.trace("_onProgress",prog)
 
-        self.log.debug("prog",prog)
-        self.log.debug("prog type",type(prog))
-
         self.progress(prog,desc="Downloading files...")
 
         if self.onProgress is not None:
@@ -212,13 +210,12 @@ class DownloadTask():
 
     def _onFinished(self):
         self.log.trace("Enter")
-        self.progress(1.0)
+
+        if self.overrideProgressSteps is None:
+            self.progress(1.0)
 
         self.downloadThread.signalProgress.disconnect(self._onProgress)
         self.downloadThread.signalFinished.disconnect(self._onFinished)
-
-        #self.parentWidget.disconnect(self.downloadThread, SIGNAL("onProgress(double)"), self._onProgress)
-        #self.parentWidget.disconnect(self.downloadThread, SIGNAL("onFinished()"), self._onFinished)
 
         if self.onFinished is not None:
             self.log.trace("onFinished callback is defined")
