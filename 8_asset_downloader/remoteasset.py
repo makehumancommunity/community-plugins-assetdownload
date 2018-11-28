@@ -146,8 +146,13 @@ class RemoteAsset():
             extension = extension.lower()
 
             if name == "screenshot":
-                fn = "screenshot" + extension
-                self.localFiles[name] = os.path.join(self.root, fn)
+                convertedScreenshot = os.path.join(self.root, "screenshot.jpg")
+                if os.path.exists(convertedScreenshot):
+                    self.localFiles[name] = convertedScreenshot
+                else:
+                    fn = "screenshot" + extension
+                    self.localFiles[name] = os.path.join(self.root, fn)
+
             if name == "thumb":
                 fn = "thumb.png"
                 self.localFiles[name] = os.path.join(self.root, fn)
