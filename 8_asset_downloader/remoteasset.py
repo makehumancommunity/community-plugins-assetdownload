@@ -34,6 +34,8 @@ from progress import Progress
 
 from core import G
 
+from .meshAssetSubdirs import ALL_CORE_ASSET_DIRS_WITH_MATERIALS_AS_TEXT
+
 mhapi = gui3d.app.mhapi
 
 fileForType = {}
@@ -67,6 +69,9 @@ class RemoteAsset():
 
         if self.type == "clothes":
             self._parseClothes()
+
+        if self.type == "material":
+            self._parseMaterials()
 
         self.root = os.path.join(self.parent.root,str(self.nid))
         if not os.path.exists(self.root):
@@ -112,6 +117,34 @@ class RemoteAsset():
 
         if self.category == "hair":
             self.type = "hair"
+
+    def _parseMaterials(self):
+
+        self.belongs_to_metadata = self._getJsonKey("belongs_to", {})
+
+        self.log.spam("belonging", self.belongs_to_metadata)
+
+        if not "belonging_is_assigned" in self.belongs_to_metadata or not self.belongs_to_metadata["belonging_is_assigned"]:
+            self.belongs_to_metadata["belonging_is_assigned"] = False
+            return
+
+        if "belongs_to_core_asset" in self.belongs_to_metadata:
+            self.log.trace("Belongs to core asset")
+
+            caTarget = self.belongs_to_metadata["belongs_to_core_asset"].strip()
+            if not caTarget or caTarget == "" or not caTarget in ALL_CORE_ASSET_DIRS_WITH_MATERIALS_AS_TEXT:
+                self.log.debug("Assigned, but not in permitted list: ", caTarget)
+                return
+            else:
+                self.log.debug("Permitted for core asset: ", caTarget)
+                udp = mhapi.locations.getUserDataPath()
+                parts = caTarget.split("/")
+                self.cachedDestination = os.path.abspath( os.path.join(udp, parts[0], parts[1]) )
+                self.log.debug("Override installation path",self.cachedDestination)
+
+        if "belongs_to_id" in self.belongs_to_metadata:
+            # TODO: It should be possible to match material directories for third part assets too
+            self.log.trace("Belongs to id")
 
     def _parseFiles(self):
 
