@@ -179,6 +179,9 @@ class AssetDownloadTaskView(gui3d.TaskView):
         else:
             self.cbxSubTypes.clear()
             self.cbxSubTypes.addItem("-- any --")
+            if newValue == "material":
+                self.cbxSubTypes.addItem("for core asset")
+
 
     def _onBtnFilterClick(self):
         self.log.trace("Enter")
@@ -194,7 +197,7 @@ class AssetDownloadTaskView(gui3d.TaskView):
 
         assetType = str(self.cbxTypes.getCurrentItem())
 
-        if assetType == "clothes":
+        if assetType == "clothes" or assetType == "material":
             subtype = str(self.cbxSubTypes.getCurrentItem())
             if subtype == "-- any --":
                 subtype = None

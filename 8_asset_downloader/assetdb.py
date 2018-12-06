@@ -233,6 +233,11 @@ class AssetDB():
                     if subtype != asset.getCategory():
                         exclude = True
 
+                if assetType == "material" and subtype is not None:
+                    btm = asset.belongs_to_metadata
+                    if not btm["belonging_is_assigned"] or not "belongs_to_core_asset" in btm:
+                        exclude = True
+
                 if author is not None:
                     if author != asset.getAuthor():
                         exclude = True
