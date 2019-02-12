@@ -305,6 +305,7 @@ class AssetDownloadTaskView(gui3d.TaskView):
 
         if self.currentlySelectedRemoteAsset is None:
             self.log.debug("No asset is selected")
+            return
 
         title = self.currentlySelectedRemoteAsset.getTitle()
         self.log.debug("Request download of asset with title",title)
@@ -317,7 +318,7 @@ class AssetDownloadTaskView(gui3d.TaskView):
 
         if currentRow is None:
             self.log.debug("No row is selected")
-            return;
+            return
 
         self.log.debug("Currently selected row index", currentRow)
         self.log.spam("Currently selected row data", self.data[currentRow])
@@ -452,7 +453,7 @@ class AssetDownloadTaskView(gui3d.TaskView):
 
         if currentRow is None:
             self.log.debug("No row is selected")
-            return;
+            return
 
         self.log.debug("Currently selected row", currentRow)
 
