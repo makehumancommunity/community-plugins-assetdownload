@@ -93,15 +93,15 @@ class AssetDB():
             else:
                 self.remoteJson = json.load(f,"UTF-8")
 
-        self.log.spam("remoteJson",self.remoteJson);
+        self.log.spam("remoteJson",self.remoteJson)
 
         for assetId in self.remoteJson.keys():
             rawAsset = self.remoteJson[assetId]
             asset = RemoteAsset(self,rawAsset)
             assetType = asset.getType()
 
-            self.log.trace("assetId",assetId);
-            self.log.trace("assetType", assetType);
+            self.log.trace("assetId",assetId)
+            self.log.trace("assetType", assetType)
 
             self.log.spam("rawAsset",rawAsset)
             if assetType == "clothes":
@@ -214,7 +214,7 @@ class AssetDB():
                 days = 90
 
             if changed.lower() == "one year":
-                days = 365;
+                days = 365
 
             dt = datetime.datetime.now()
             dt = dt - datetime.timedelta(days)

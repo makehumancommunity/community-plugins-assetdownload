@@ -322,7 +322,7 @@ class AssetDownloadTaskView(gui3d.TaskView):
 
         if currentRow is None:
             self.log.debug("No row is selected")
-            return;
+            return
 
         self.log.debug("Currently selected row index", currentRow)
         self.log.spam("Currently selected row data", self.data[currentRow])
@@ -406,6 +406,7 @@ class AssetDownloadTaskView(gui3d.TaskView):
         self.tableView.setModel(self.model)
         self.tableView.clicked.connect(self._tableClick)
         self.tableView.setSelectionBehavior(QTableView.SelectRows)
+        self.tableView.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
         self.tableView.setSortingEnabled(True)
         self.tableView.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         self.tableView.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
@@ -456,7 +457,7 @@ class AssetDownloadTaskView(gui3d.TaskView):
 
         if currentRow is None:
             self.log.debug("No row is selected")
-            return;
+            return
 
         self.log.debug("Currently selected row", currentRow)
 
