@@ -300,11 +300,16 @@ class AssetDownloadTaskView(gui3d.TaskView):
     def _onBtnDownloadClick(self):
         self.log.trace("Enter")
 
+        if not self.assetdb or not self.assetdb.isSynchronized:
+            self.log.debug("Database has not been synchronized")
+            return
+
         if not self.hasFilter:
             self.log.debug("Table is empty")
 
         if self.currentlySelectedRemoteAsset is None:
             self.log.debug("No asset is selected")
+            return
 
         title = self.currentlySelectedRemoteAsset.getTitle()
         self.log.debug("Request download of asset with title",title)
