@@ -314,25 +314,7 @@ class AssetDownloadTaskView(gui3d.TaskView):
         title = self.currentlySelectedRemoteAsset.getTitle()
         self.log.debug("Request download of asset with title",title)
 
-        currentRow = None
-
-        indexes = self.tableView.selectionModel().selectedRows()
-        for index in sorted(indexes):
-            currentRow = index.row()
-
-        if currentRow is None:
-            self.log.debug("No row is selected")
-            return
-
-        self.log.debug("Currently selected row index", currentRow)
-        self.log.spam("Currently selected row data", self.data[currentRow])
-
-        assetId = int(self.data[currentRow][0])
-        assetType = str(self.cbxTypes.getCurrentItem())
-
-        remoteAsset = self.assetdb.remoteAssets[assetType][assetId]
-
-        self.assetdb.downloadItem(self.syncBox,remoteAsset,self._downloadItemFinished)
+        self.assetdb.downloadItem(self.syncBox,self.currentlySelectedRemoteAsset,self._downloadItemFinished)
 
     def _downloadItemFinished(self):
         self.showMessage("Finished downloading")
@@ -473,6 +455,8 @@ class AssetDownloadTaskView(gui3d.TaskView):
 
         assetId = int(self.data[currentRow][0])
         assetType = str(self.cbxTypes.getCurrentItem())
+
+        self.log.debug("Currently selected asset id", assetId)
 
         remoteAsset = self.assetdb.remoteAssets[assetType][assetId]
 
