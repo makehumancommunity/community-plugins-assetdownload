@@ -397,6 +397,22 @@ class AssetDownloadTaskView(gui3d.TaskView):
 
         self.hasFilter = False
 
+    def _onBtnDownloadScreenshotClick(self):
+        self.log.debug("Download screenshot")
+        remoteAsset = self.currentlySelectedRemoteAsset
+        tups = remoteAsset.getDownloadTuples(ignoreExisting=True, onlyMeta=True, excludeThumb=True, excludeScreenshot=False)
+        dt = DownloadTask(self, tups, self._afterScreenshotDownloaded)
+
+    def _afterScreenshotDownloaded(self):
+        self.log.debug("Downloaded")
+        remoteAsset = self.currentlySelectedRemoteAsset
+        render = remoteAsset.getScreenshotPath()
+
+        if render is not None and render != "" and os.path.exists(render):
+            self.detailsRender.setPixmap(QtGui.QPixmap(os.path.abspath(render)))
+            self.detailsRender.setGeometry(0, 0, 800, 600)
+            self.btnDownloadScreenshot.hide()
+
     def _setupDetails(self):
         self.log.trace("Enter")
 
@@ -416,6 +432,19 @@ class AssetDownloadTaskView(gui3d.TaskView):
         self.detailsRender.setPixmap(QPixmap(os.path.abspath(self.notfound)))
         layout.addWidget(self.detailsRender)
 
+        self.btnDownloadScreenshot = mhapi.ui.createButton("Download screenshot")
+
+        @self.btnDownloadScreenshot.mhEvent
+        def onClicked(event):
+            self._onBtnDownloadScreenshotClick()
+
+        blayout = QHBoxLayout()
+        bwidget = QWidget()
+        bwidget.setLayout(blayout)
+        blayout.addWidget(self.btnDownloadScreenshot)
+        blayout.addStretch(1)
+
+        layout.addWidget(bwidget)
         layout.addStretch(1)
 
         self.detailsPanel = QWidget()
@@ -486,13 +515,12 @@ class AssetDownloadTaskView(gui3d.TaskView):
 
         if render is not None and render != "" and os.path.exists(render):
             self.detailsRender.setPixmap(QtGui.QPixmap(os.path.abspath(render)))
+            self.detailsRender.setGeometry(0, 0, 800, 600)
+            self.btnDownloadScreenshot.hide()
         else:
-            if thumbPath and os.path.exists(thumbPath):
-                self.detailsRender.setPixmap(QtGui.QPixmap(os.path.abspath(thumbPath)))
-            else:
-                self.detailsRender.setPixmap(QtGui.QPixmap(os.path.abspath(self.notfound)))
+            self.detailsRender.setPixmap(QtGui.QPixmap(mhapi.locations.getSystemDataPath("notfound.thumb")))
+            self.btnDownloadScreenshot.show()
 
-        self.detailsRender.setGeometry(0, 0, 800, 600)
 
     def showMessage(self,message,title="Information"):
         self.msg = QMessageBox()
