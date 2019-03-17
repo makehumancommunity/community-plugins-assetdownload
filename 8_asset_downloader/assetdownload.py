@@ -316,8 +316,15 @@ class AssetDownloadTaskView(gui3d.TaskView):
 
         self.assetdb.downloadItem(self.syncBox,self.currentlySelectedRemoteAsset,self._downloadItemFinished)
 
-    def _downloadItemFinished(self):
-        self.showMessage("Finished downloading")
+    def _downloadItemFinished(self, code=0, file=None):
+        if code > 0:
+            msg = "The requested item failed to download. The server responded with the error code " + str(code) \
+                    + " when trying to download " + str(file) + ".\n\nThis is an indication that there is something wrong " \
+                    + "with the asset on the server, and it should probably be reported to the author of the asset, " \
+                    + "possibly as a comment on the asset page."
+            self.showMessage(msg)
+        else:
+            self.showMessage("Finished downloading")
 
     def _setupSyncBox(self):
         self.log.trace("Enter")
@@ -371,7 +378,7 @@ class AssetDownloadTaskView(gui3d.TaskView):
     def _onSyncProgress(self,prog=0.0):
         self.log.trace("onSyncProgress")
 
-    def _downloadFinished(self):
+    def _downloadFinished(self, code, file):
         self.log.trace("Enter")
         self.log.debug("Download finished")
 

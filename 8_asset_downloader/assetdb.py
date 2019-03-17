@@ -429,7 +429,12 @@ class AssetDB():
 
         self._downloadTask = DownloadTask(parentWidget, filesToDownload, self._downloadFinished, self._downloadProgress)
 
-    def _downloadFinished(self):
+    def _downloadFinished(self, code, file):
+
+        if code > 0:
+            if self._downloadonFinished is not None:
+                self._downloadonFinished(code, file)
+            return
 
         remoteAsset = self._downloadAsset
 
@@ -455,6 +460,9 @@ class AssetDB():
 
         self.log.debug("Downloaded file should be",file)
         self.log.debug("assetId",assetId)
+
+        if not os.path.exists(file):
+            self.log.error("File does not exist post download", file)
 
         mod = os.path.getmtime(file)
         dt = datetime.datetime.fromtimestamp(mod)

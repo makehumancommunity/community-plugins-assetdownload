@@ -24,6 +24,7 @@ import os
 import time
 import sys
 import io
+import urllib
 
 from progress import Progress
 
@@ -61,7 +62,7 @@ else:
 class DownloadThread(QThread):
 
     signalProgress = qtSignal(float)
-    signalFinished = qtSignal()
+    signalFinished = qtSignal(str)
 
     def __init__(self, downloadTuples, parent = None, overrideProgressSteps=None):
         QThread.__init__(self, parent)
@@ -80,6 +81,8 @@ class DownloadThread(QThread):
         current = 0
 
         lastReport = time.time()
+
+        downloadStatus = "OK"
 
         for dt in self.downloadTuples:
             remote = dt[0]
@@ -143,6 +146,10 @@ class DownloadThread(QThread):
                         f.write(buf.getvalue())
                         self.log.debug("Successfully downloaded",remote)
 
+            except urllib.error.HTTPError as e:
+                self.log.error("Caught http error", e)
+                downloadStatus = str(e.code) + ";" + remote
+                break
             except:
                 self.log.error("Exception in download",sys.exc_info())
                 self.log.warn("Could not download",remote)
@@ -156,16 +163,16 @@ class DownloadThread(QThread):
                 else:
                     self.onProgress(float(current) / float(self.overrideProgressSteps))
 
-        self.onFinished()
+        self.onFinished(downloadStatus)
         self.exiting = True
 
     def onProgress(self, prog = 0.0):
         self.log.trace("onProgress",prog)
         self.signalProgress.emit(prog)
 
-    def onFinished(self):
+    def onFinished(self, status = "OK"):
         self.log.trace("Enter")
-        self.signalFinished.emit()
+        self.signalFinished.emit(status)
 
     def __del__(self):
         self.log.trace("Enter")
@@ -208,8 +215,9 @@ class DownloadTask():
         else:
             self.log.trace("onProgress callback is not defined")
 
-    def _onFinished(self):
+    def _onFinished(self, status = "OK"):
         self.log.trace("Enter")
+        self.log.debug("Status", status)
 
         if self.overrideProgressSteps is None:
             self.progress(1.0)
@@ -219,7 +227,14 @@ class DownloadTask():
 
         if self.onFinished is not None:
             self.log.trace("onFinished callback is defined")
-            self.onFinished()
+
+            code = 0; file = None
+
+            if status != "OK":
+                (code, file) = status.split(";",2)
+                code = int(code)
+            self.onFinished(code, file)
+
         else:
             self.log.trace("onFinished callback is not defined")
 
