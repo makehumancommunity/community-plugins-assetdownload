@@ -363,7 +363,7 @@ class AssetDownloadTaskView(gui3d.TaskView):
         self.log.trace("Enter")
         self.assetdb.synchronizeRemote(self.syncBox,self._onSyncFinished,self._onSyncProgress, downloadScreenshots=downloadScreenshots)
 
-    def _onSyncFinished(self):
+    def _onSyncFinished(self, code=0, file=None):
         self.log.trace("onSyncFinished")
         self.showMessage("Asset DB is now synchronized")
 
@@ -378,7 +378,7 @@ class AssetDownloadTaskView(gui3d.TaskView):
     def _onSyncProgress(self,prog=0.0):
         self.log.trace("onSyncProgress")
 
-    def _downloadFinished(self, code, file):
+    def _downloadFinished(self, code=0, file=None):
         self.log.trace("Enter")
         self.log.debug("Download finished")
 
@@ -408,9 +408,9 @@ class AssetDownloadTaskView(gui3d.TaskView):
         self.log.debug("Download screenshot")
         remoteAsset = self.currentlySelectedRemoteAsset
         tups = remoteAsset.getDownloadTuples(ignoreExisting=True, onlyMeta=True, excludeThumb=True, excludeScreenshot=False)
-        dt = DownloadTask(self, tups, self._afterScreenshotDownloaded)
+        self.screenshotDt = DownloadTask(self, tups, self._afterScreenshotDownloaded)
 
-    def _afterScreenshotDownloaded(self):
+    def _afterScreenshotDownloaded(self, code=0, file=None):
         self.log.debug("Downloaded")
         remoteAsset = self.currentlySelectedRemoteAsset
         render = remoteAsset.getScreenshotPath()

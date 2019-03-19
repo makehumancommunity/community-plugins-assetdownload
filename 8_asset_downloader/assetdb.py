@@ -331,7 +331,7 @@ class AssetDB():
     def _syncRemote1Progress(self,prog = 0.0):
         self.log.trace("Enter")
 
-    def _syncRemote1Finished(self):
+    def _syncRemote1Finished(self, code=0, file=None):
         self.log.trace("Enter")
 
         progress = Progress()
@@ -402,7 +402,7 @@ class AssetDB():
     def _syncRemote2Progress(self,prog = 0.0):
         self.log.trace("Enter")
 
-    def _syncRemote2Finished(self):
+    def _syncRemote2Finished(self, code=0, file=None):
         self.log.trace("Enter")
 
         progress = Progress()
