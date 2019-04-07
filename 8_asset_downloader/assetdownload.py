@@ -50,6 +50,7 @@ else:
         from PySide import QtCore
         from PySide.QtGui import *
         from PySide.QtCore import *
+        QtWidgets = PySide.Qt.QtWidgets
     else:
         from PyQt4 import QtGui
         from PyQt4 import QtCore
@@ -395,7 +396,11 @@ class AssetDownloadTaskView(gui3d.TaskView):
         self.tableView.setModel(self.model)
         self.tableView.clicked.connect(self._tableClick)
         self.tableView.setSelectionBehavior(QTableView.SelectRows)
-        self.tableView.setSelectionMode(QtWidgets.QAbstractItemView.SingleSelection)
+        if(mhapi.utility.isPython3()):
+            selmode = QtWidgets.QAbstractItemView.SingleSelection
+        else:
+            selmode = QAbstractItemView.SingleSelection
+        self.tableView.setSelectionMode(selmode)
         self.tableView.setSortingEnabled(True)
         self.tableView.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         self.tableView.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
