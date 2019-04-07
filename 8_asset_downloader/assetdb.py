@@ -49,7 +49,7 @@ class AssetDB():
 
         self.knownClothesCategories = []
         self.knownAuthors = []
-
+        self.assetsById = dict()
         self.isSynchronized = False
         self.parent = parent
         self.root = mhapi.locations.getUserDataPath("community-assets")
@@ -97,7 +97,7 @@ class AssetDB():
 
         for assetId in self.remoteJson.keys():
             rawAsset = self.remoteJson[assetId]
-            asset = RemoteAsset(self,rawAsset)
+            asset = RemoteAsset(self,rawAsset,assetdb=self)
             assetType = asset.getType()
 
             self.log.trace("assetId",assetId)
@@ -118,6 +118,7 @@ class AssetDB():
                 if assetType != "node_setups_and_blender_specific":
                     assetId = asset.getId()
                     self.remoteAssets[assetType][assetId] = asset
+                    self.assetsById[assetId] = asset
 
         for assetType in self.remoteAssets:
             for assetId in self.remoteAssets[assetType]:

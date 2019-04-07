@@ -58,8 +58,9 @@ fileForType["target"] = "file"
 
 class RemoteAsset():
 
-    def __init__(self, parent, json):
+    def __init__(self, parent, json, assetdb=None):
 
+        self.assetdb = assetdb
         self.cachedDestination = None
         self.parent = parent
         self.rawJson = json
@@ -143,8 +144,13 @@ class RemoteAsset():
                 self.log.debug("Override installation path",self.cachedDestination)
 
         if "belongs_to_id" in self.belongs_to_metadata:
-            # TODO: It should be possible to match material directories for third part assets too
-            self.log.trace("Belongs to id")
+            targetAsset = self.assetdb.assetsById[self.belongs_to_metadata["belongs_to_id"]]
+            self.log.debug("Target asset", targetAsset.getTitle())
+            self.log.debug("Target asset ID", targetAsset.getId())
+            self.log.debug("Original installation path", self.getInstallPath())
+            ip = targetAsset.getInstallPath()
+            self.log.debug("Overriding target installation path", ip)
+            self.cachedDestination = ip
 
     def _parseFiles(self):
 
