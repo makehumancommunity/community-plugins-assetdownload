@@ -144,13 +144,14 @@ class RemoteAsset():
                 self.log.debug("Override installation path",self.cachedDestination)
 
         if "belongs_to_id" in self.belongs_to_metadata:
-            targetAsset = self.assetdb.assetsById[self.belongs_to_metadata["belongs_to_id"]]
-            self.log.debug("Target asset", targetAsset.getTitle())
-            self.log.debug("Target asset ID", targetAsset.getId())
-            self.log.debug("Original installation path", self.getInstallPath())
-            ip = targetAsset.getInstallPath()
-            self.log.debug("Overriding target installation path", ip)
-            self.cachedDestination = ip
+            if self.belongs_to_metadata["belongs_to_id"] in self.assetdb.assetsById:
+                targetAsset = self.assetdb.assetsById[self.belongs_to_metadata["belongs_to_id"]]
+                self.log.debug("Target asset", targetAsset.getTitle())
+                self.log.debug("Target asset ID", targetAsset.getId())
+                self.log.debug("Original installation path", self.getInstallPath())
+                ip = targetAsset.getInstallPath()
+                self.log.debug("Overriding target installation path", ip)
+                self.cachedDestination = ip
 
     def _parseFiles(self):
 
